@@ -17,6 +17,7 @@ using google::protobuf::Message;
 
 #include <fcntl.h>
 
+
 class BiasBlob
 {
     private:
@@ -69,4 +70,31 @@ class WeightBlob
         {
             data_[N][C][H][W] = value ;
         }
+};
+
+class MatrixBlob
+{
+	private:
+		float ** data_;
+		vector<int> shape_;
+		int count_;
+
+		MatrixBlob( const MatrixBlob & );
+		MatrixBlob & operator = ( const MatrixBlob & );
+	public:
+		explicit MatrixBlob( const int N , const int C );
+		explicit MatrixBlob( const ::caffe::BlobProto & blob );
+		MatrixBlob():data_(NULL) , count_(0){};
+		~MatrixBlob();
+
+		vector<int> getShape(){ return shape_; }
+
+		inline float getValue( const int N , const int C)
+		{
+			return data_[N][C];
+		}
+		inline void setValue ( const int N , const int C , float value )
+		{
+			data_[N][C] = value;
+		}
 };

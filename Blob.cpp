@@ -54,6 +54,7 @@ WeightBlob::WeightBlob( const ::caffe::BlobProto & blob )
     if ( blob.shape().dim_size() != 4 )
     {
         ::std::cout << "WRONG DIMENSION SIZE IN FUNCTION WeightBlob(caffe::BlobProto) !\n" << ::std::endl;
+		return;
     }
     shape_.clear();
     shape_.resize(4);
@@ -102,4 +103,54 @@ WeightBlob::~WeightBlob()
         delete [] data_[iNUM];
     }
     delete [] data_;
+}
+
+MatrixBlob::MatrixBlob( const int N , const int C )
+{
+	shape_.clear();
+	shape_.resize(2);
+
+	shape_[0] = N;
+	shape_[1] = C;
+
+	count_ = N * C;
+
+	data_ = new float *[N];
+
+	for( int i = 0 ; i < N ; ++ i )
+		data_[i] = new float [C];
+}
+
+MatrixBlob::~MatrixBlob()
+{
+	for ( int i = 0 ; i < shape_[0] ; ++ i )
+		delete [] data_[i];
+
+	delete [] data_;
+}
+
+MatrixBlob::MatrixBlob( const ::caffe::BlobProto & blob )
+{
+    if ( blob.shape().dim_size() != 2 )
+    {
+        ::std::cout << "WRONG DIMENSION SIZE IN FUNCTION MatrixBlob(caffe::BlobProto) !\n" << ::std::endl;
+		return;
+    }
+
+    shape_.clear();
+    shape_.resize(2);
+
+    shape_[0] = blob.shape().dim(0);
+    shape_[1] = blob.shape().dim(1);
+	
+	count_ = shape_[0] * shape_[1];
+
+	data_ = new float * [ shape_[0] ];
+
+	for ( int i = 0 ; i < shape_[0] ; ++ i )
+		data_[i] = new float [ shape_[1] ];
+
+	for ( int iNUM = 0 ; iNUM < shape_[0] ; ++ iNUM )
+	for ( int iCHA = 0 ; iCHA < shape_[1] ; ++ iCHA )
+		data_[iNUM][iCHA] = blob.data( iNUM * shape_[1] + iCHA );
 }
