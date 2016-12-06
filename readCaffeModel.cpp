@@ -18,6 +18,7 @@ using google::protobuf::Message;
 
 #include <fcntl.h>
 #include "Blob.hpp"
+#include "RedPixelsExtractor.hpp"
 
 
 void conv1_gemm( IplImage * imgSrc , WeightBlob & weight , BiasBlob & bias , WeightBlob & conv1_result );
@@ -232,6 +233,89 @@ int main( void )
  
 	net.ParseFromCodedStream( coded_input ); 
 
+	IplImage * imgSrc = cvLoadImage( "/home/pitaloveu/Desktop/test_number/color_5.jpg" , CV_LOAD_IMAGE_COLOR );
+	IplImage * imgHSV = cvCreateImage( cvGetSize( imgSrc ) , 8 , 3 );
+
+	IplImage * imgGray = cvCreateImage( cvGetSize( imgSrc ) , 8 , 1 );
+	IplImage * imgThreshold = cvCreateImage( cvGetSize( imgSrc ) , 8 , 1 );
+	cvCvtColor( imgSrc , imgGray , CV_BGR2GRAY );
+
+	cvAdaptiveThreshold( imgGray , imgThreshold , 255 , CV_ADAPTIVE_THRESH_MEAN_C , CV_THRESH_BINARY , 55 ,20 );
+
+	for ( int irow = 0 ; irow < imgSrc->height ; ++ irow )
+	for ( int icol = 0 ; icol < imgSrc->width  ; ++ icol )
+		if ( cvGetReal2D( imgThreshold , irow , icol ) == 255 )
+			cvSet2D( imgSrc , irow , icol , cvScalar(255,255,255));
+
+	cvCvtColor( imgSrc , imgHSV , CV_BGR2HSV );
+
+	IplImage * drawSpots = cvCreateImage( cvGetSize( imgSrc) , 8 , 3 );
+	cvSetZero( drawSpots );
+
+	int epsilon = 100;
+	vector< pair<float , float> > features;
+
+	for ( int irow = 0 ; irow < imgSrc->height ; ++ irow )
+	for ( int icol = 0 ; icol < imgSrc->width  ; ++ icol )
+	{
+		if ( cvGetReal2D( imgThreshold , irow , icol ) != 255  )
+		{
+			float vertical = 400. * ( (cvGet2D( imgSrc , irow , icol).val[2] + epsilon ) / ( cvGet2D( imgSrc , irow , icol).val[0] + epsilon) );
+
+			float horizontal = 400. * ( (cvGet2D( imgSrc , irow , icol).val[2] + epsilon ) / ( cvGet2D( imgSrc , irow , icol).val[1] + epsilon) );
+			features.push_back( make_pair((cvGet2D( imgSrc , irow , icol).val[2] + epsilon ) / ( cvGet2D( imgSrc , irow , icol).val[1] + epsilon) , (cvGet2D( imgSrc , irow , icol).val[2] + epsilon ) / ( cvGet2D( imgSrc , irow , icol).val[0] + epsilon) ) );
+
+		}
+	}
+/*
+	IplImage * HSVS = cvCreateImage( cvGetSize( imgSrc ) , 8 , 1 );
+	for ( int irow = 0 ; irow < imgSrc->height ; ++ irow )
+	for ( int icol = 0 ; icol < imgSrc->width  ; ++ icol )
+		cvSetReal2D( HSVS , irow , icol , cvGet2D( imgHSV , irow , icol).val[2] );
+*/	
+
+	vector<float> phai(2, 0.5 );
+	vector< pair<float , float> >exp(2);
+	exp[0] = make_pair( 1 , 1. );
+	exp[1] = make_pair( 2 , 2 );
+
+	RedPixelsExtractor classifier;
+	classifier.initExtractor( phai , exp ,  features );
+	classifier.EMAlgorithm( 20 );
+	vector<float> score(2);
+
+	for ( int irow = 0 ; irow < imgSrc->height ; ++ irow )
+    for ( int icol = 0 ; icol < imgSrc->width  ; ++ icol )
+	{
+		if ( cvGetReal2D( imgThreshold , irow , icol ) != 255  )
+		{
+			float feature1 = (cvGet2D( imgSrc , irow , icol).val[2] + epsilon ) / \
+							( cvGet2D( imgSrc , irow , icol).val[1] + epsilon);
+
+			float feature2 = (cvGet2D( imgSrc , irow , icol).val[2] + epsilon ) / \
+							( cvGet2D( imgSrc , irow , icol).val[0] + epsilon);
+
+			pair<float, float> tmp = make_pair( feature1 , feature2 );
+			classifier.takeScore( tmp  , score );
+
+			CvPoint center = cvPoint( 400 * feature1 + 500 , 400 * feature2 + 500);
+
+			if ( score[0]  > 0.5 )
+			{
+				cvSetReal2D( imgThreshold , irow , icol , 255 );
+				cvCircle( drawSpots, center, 1 , cvScalar( 0 , 0 ,255 ) , 1 ) ;
+			}
+			else
+				cvCircle( drawSpots, center, 1 , cvScalar( 0 , 255 ,0 ) , 1 ) ;
+		}
+	}
+
+	cvNamedWindow( "show" , CV_WINDOW_NORMAL );
+	cvShowImage( "show" , imgThreshold );
+	cvWaitKey();
+	
+// test on MNIST test set, the accuracy is 99.18%;
+/*
 	::std::ifstream image_file ( "t10k-images-idx3-ubyte" , std::ios::in | std::ios::binary );
     ::std::ifstream label_file ( "t10k-labels-idx1-ubyte" , std::ios::in | std::ios::binary );
 
@@ -280,6 +364,7 @@ int main( void )
 		}
 		cout << " test of output = " << int( label ) << endl;
 	}
+*/
 
 	delete coded_input;  
 	delete raw_input;  
