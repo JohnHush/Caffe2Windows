@@ -267,22 +267,10 @@ int main( void )
 
 		}
 	}
-/*
-	IplImage * HSVS = cvCreateImage( cvGetSize( imgSrc ) , 8 , 1 );
-	for ( int irow = 0 ; irow < imgSrc->height ; ++ irow )
-	for ( int icol = 0 ; icol < imgSrc->width  ; ++ icol )
-		cvSetReal2D( HSVS , irow , icol , cvGet2D( imgHSV , irow , icol).val[2] );
-*/	
-
-	vector<float> phai(2, 0.5 );
-	vector< pair<float , float> >exp(2);
-	exp[0] = make_pair( 1 , 1. );
-	exp[1] = make_pair( 2 , 2 );
 
 	RedPixelsExtractor classifier;
-	classifier.initExtractor( phai , exp ,  features );
-	classifier.EMAlgorithm( 20 );
-	vector<float> score(2);
+	classifier.initExtractor( features );
+	classifier.EMAlgorithm( );
 
 	for ( int irow = 0 ; irow < imgSrc->height ; ++ irow )
     for ( int icol = 0 ; icol < imgSrc->width  ; ++ icol )
@@ -296,11 +284,10 @@ int main( void )
 							( cvGet2D( imgSrc , irow , icol).val[0] + epsilon);
 
 			pair<float, float> tmp = make_pair( feature1 , feature2 );
-			classifier.takeScore( tmp  , score );
 
 			CvPoint center = cvPoint( 400 * feature1 + 500 , 400 * feature2 + 500);
 
-			if ( score[0]  > 0.5 )
+			if ( classifier.isGray(tmp) )
 			{
 				cvSetReal2D( imgThreshold , irow , icol , 255 );
 				cvCircle( drawSpots, center, 1 , cvScalar( 0 , 0 ,255 ) , 1 ) ;

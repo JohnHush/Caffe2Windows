@@ -85,7 +85,18 @@ class RedPixelsExtractor
 		RedPixelsExtractor(){};
 		void initExtractor( vector<float> phai , vector< pair<float , float > > exp , \
 												vector< pair<float , float> >features );
-		void EMAlgorithm( int iteration_step );
+
+		void initExtractor( vector< pair<float , float> >features );
+		/*
+ 		 * reload function initExtractor, the phai value is set to be <0.5, 0.5>, 
+ 		 * the exp[0] and exp[1] is chosen randomly from the features point
+ 		 * but if the point is too far away from the center(average) beyond 2 standard
+ 		 * deviation, then it's not allowed, this could lighten the problem of 
+ 		 * prior probability = 0 situation
+ 		 * 222, another constrain, the two chosen points should not be too close
+ 		 * if the distance between them is smaller than 0.01 std, it's now allowed
+ 		 */
+		void EMAlgorithm( int iteration_step = 100 );
 		/*
  		 * to simplify the calculation, we take the max iteration step 
  		 * as iteration step
@@ -97,6 +108,17 @@ class RedPixelsExtractor
  		 * it input the computed score in vector score;
  		 * the score is actually the posterior probability
  		 * and it's summed to 1
+ 		 */
+		bool isGray( pair<float , float> & x );
+		/*
+ 		 * this function take a input feature to calculate it defines
+ 		 * a gray point or not, 
+ 		 * first, it calculate the distance of the two expecatation to
+ 		 * point(1,1) as in this class, point(1,1) stands for gray point
+ 		 * so, if the expectation is closer to (1,1), this is supposed
+ 		 * to gray class, then we calculate the posterior probability
+ 		 * like before, and selete the probability of which class is
+ 		 * bigger than 0.5;
  		 */
 };
 #endif

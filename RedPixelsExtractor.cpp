@@ -1,5 +1,6 @@
 #include "RedPixelsExtractor.hpp"
 #include <iostream>
+#include <stdlib.h>
 
 void RedPixelsExtractor::matrix_inversion( RedPixelsExtractor::mat2d & a , mat2d & inverse )
 {
@@ -7,7 +8,7 @@ void RedPixelsExtractor::matrix_inversion( RedPixelsExtractor::mat2d & a , mat2d
  	 * 2d matrix inversion has a close form, 
  	 * but user should be confirmed that the determinant is not zero
  	 */
-	if ( fabs( a.a00 * a.a11 - a.a10 * a.a01 ) < 0.0000000001 )
+	if ( fabs( a.a00 * a.a11 - a.a10 * a.a01 ) < 1E-10 )
 	{
 		std::cout << "the determinant of the matrix equals to zero!\n" << std::endl;
 		return;
@@ -36,6 +37,90 @@ float RedPixelsExtractor::prior_pro( pair<float , float> & x , pair<float, float
 	float exp_index = -0.5 * ( tmp.first * ( x.first - miu.first ) + tmp.second * ( x.second - miu.second ) );
 
 	return ( exp( exp_index ) / ( 2. * 3.1415926 * sqrt(det) ) );
+}
+
+void RedPixelsExtractor::initExtractor( vector< pair<float , float> >features )
+{
+    int data_num = features.size();
+
+    features_.resize( data_num );
+    phai_.resize(2);
+    sigma_.resize(2);
+    exp_.resize(2);
+    post_.resize( data_num );
+
+    phai_[0] = 0.5;
+    phai_[1] = 0.5;
+
+    /*
+     * compute the std for the whole data
+     * and set every sigma to this std as an inital value
+     */
+    vector<float> ave(2, 0.);
+
+    for ( int i = 0 ; i < data_num ; ++i )
+    {
+        ave[0] += features[i].first;
+        ave[1] += features[i].second;
+    }
+    ave[0] /= data_num;
+    ave[1] /= data_num;
+
+    vector<float> std_( 2 , 0.);
+
+    for ( int i = 0 ; i < data_num ; ++i )
+    {
+        std_[0] += ( ave[0] - features[i].first )  * ( ave[0] - features[i].first );
+        std_[1] += ( ave[1] - features[i].second ) * ( ave[1] - features[i].second );
+    }
+    std_[0] /= data_num;
+    std_[1] /= data_num;
+
+    sigma_[0].a00 = std_[0];
+    sigma_[0].a11 = std_[1];
+    sigma_[0].a01 = 0.;
+    sigma_[0].a10 = 0.;
+
+    sigma_[1].a00 = std_[0];
+    sigma_[1].a11 = std_[1];
+    sigma_[1].a01 = 0.;
+    sigma_[1].a10 = 0.;
+
+    for ( int i = 0 ; i < features.size() ; ++ i)
+    {
+        features_[i].first  = features[i].first;
+        features_[i].second = features[i].second;
+    }
+
+	std_[0] = sqrt( std_[0] );
+	std_[1] = sqrt( std_[1] );
+
+	float set_range = 2.8 ;
+	float pt_dis = 0.1;
+	// the point is set in ave+_set_range*std;
+	bool OUTOFRANGE;
+	bool TOOCLOSE;
+	do
+	{
+		int index1 = int((double(rand())/RAND_MAX) * (data_num-1) );
+		int index2 = int((double(rand())/RAND_MAX) * (data_num-1) );
+
+		exp_[0] = features_[index1];
+		exp_[1] = features_[index2];
+
+		OUTOFRANGE = false;
+		TOOCLOSE   = false;
+
+		if ( exp_[0].first < ave[0] - set_range * std_[0] || exp_[0].first > ave[0] + set_range * std_[0] || \
+			 exp_[1].first < ave[0] - set_range * std_[0] || exp_[1].first > ave[0] + set_range * std_[0] || \
+			 exp_[0].second< ave[1] - set_range * std_[1] || exp_[0].second> ave[1] + set_range * std_[1] || \
+			 exp_[1].second< ave[1] - set_range * std_[1] || exp_[1].second> ave[1] + set_range * std_[1] )
+			OUTOFRANGE = true;
+		if ( fabs( exp_[0].first - exp_[1].first ) < pt_dis * std_[0] || \
+			 fabs( exp_[0].second- exp_[1].second) < pt_dis * std_[1])
+			TOOCLOSE = true;
+	}
+	while( OUTOFRANGE && TOOCLOSE );
 }
 
 void RedPixelsExtractor::initExtractor( vector<float> phai , vector< pair<float , float> > exp ,\
@@ -106,8 +191,21 @@ void  RedPixelsExtractor::post_pro()
 		float first_prior = prior_pro( features_[iDATA] , exp_[0] , sigma_[0] );
 		float secon_prior = prior_pro( features_[iDATA] , exp_[1] , sigma_[1] );
 
-		post_[iDATA].first   = ( first_prior * phai_[0] ) / ( first_prior * phai_[0] + secon_prior * phai_[1] );
-		post_[iDATA].second  = ( secon_prior * phai_[1] ) / ( first_prior * phai_[0] + secon_prior * phai_[1] );
+		if ( first_prior < 1E-10 && secon_prior < 1E-10 )
+		{
+			post_[iDATA].first  = 0.5 + (-50 + rand()%100)/200. ;
+			post_[iDATA].second = 1. - post_[iDATA].first;
+		}
+		/*
+ 		 * if the two prior probabilitys are too small, then we
+ 		 * set all the posterior probability around 0.5 to avoid
+ 		 * nan value
+ 		 */
+		else
+		{
+			post_[iDATA].first   = ( first_prior * phai_[0] ) / ( first_prior * phai_[0] + secon_prior * phai_[1] );
+			post_[iDATA].second  = ( secon_prior * phai_[1] ) / ( first_prior * phai_[0] + secon_prior * phai_[1] );
+		}
 	}
 }
 
@@ -206,25 +304,21 @@ void RedPixelsExtractor::update()
 
 void RedPixelsExtractor::EMAlgorithm( int iteration_step )
 {
+	float epsilon = 1E-10;
+	float CRatio  = 0.00001;
 	for ( int i = 0 ; i < iteration_step ; ++ i )
 	{
 		post_pro();
 		update();
 
-		if ( fabs( delta_phai_[0] ) / ( fabs(phai_[0]) + 0.0000001 )  < 0.001  && 
-				fabs( delta_phai_[1] ) / ( fabs(phai_[1]) + 0.0000001 )  < 0.001 && 
-				fabs( delta_exp_[0].first ) / ( fabs(exp_[0].first) + 0.0000001 )  < 0.001 && 
-				fabs( delta_exp_[0].second ) / ( fabs(exp_[0].second) + 0.0000001 )  < 0.001 &&
-				fabs( delta_exp_[1].first ) / ( fabs(exp_[1].first) + 0.0000001 )  < 0.001 &&
-				fabs( delta_exp_[1].second ) / ( fabs(exp_[1].second) + 0.0000001 )  < 0.001 )
+		if ( 	fabs( delta_phai_[0] )		/ ( fabs(phai_[0]) + epsilon )  	< CRatio  && 
+				fabs( delta_phai_[1] )		/ ( fabs(phai_[1]) + epsilon )  	< CRatio && 
+				fabs( delta_exp_[0].first )	/ ( fabs(exp_[0].first) + epsilon )	< CRatio && 
+				fabs( delta_exp_[0].second )/ ( fabs(exp_[0].second) + epsilon )< CRatio &&
+				fabs( delta_exp_[1].first )	/ ( fabs(exp_[1].first) + epsilon )	< CRatio &&
+				fabs( delta_exp_[1].second )/ ( fabs(exp_[1].second) + epsilon )< CRatio )
 		break;
-
-
 	}
-	std::cout << "ave1_first_compo = " << exp_[0].first << "  ave1_second_compo = " << exp_[0].second << std::endl;
-	std::cout << "ave2_first_compo = " << exp_[1].first << "  ave2_second_compo = " << exp_[1].second << std::endl;
-	std::cout << "phai[0] = " << phai_[0] << std::endl;
-	std::cout << "phai[1] = " << phai_[1] << std::endl;
 }
 
 void RedPixelsExtractor::takeScore( pair<float , float> &x , vector<float> & score )
@@ -236,4 +330,25 @@ void RedPixelsExtractor::takeScore( pair<float , float> &x , vector<float> & sco
 
 	score[0] = ( first_prior * phai_[0] ) / ( first_prior * phai_[0] + secon_prior * phai_[1] );
 	score[1] = 1. - score[0];
+}
+
+bool RedPixelsExtractor::isGray( pair<float , float> & x )
+{
+	float dis0 = (exp_[0].first - 1. ) * (exp_[0].second - 1. );
+	float dis1 = (exp_[1].first - 1. ) * (exp_[1].second - 1. );
+
+	int gray_index = dis0>dis1?1:0;
+	int colo_index = 1 - gray_index;
+	// decide which label is gray
+	//
+	vector<float> prior(2);
+	
+	prior[0] = prior_pro( x , exp_[0] , sigma_[0] );
+	prior[1] = prior_pro( x , exp_[1] , sigma_[1] );
+
+	if ( ( prior[gray_index] * phai_[gray_index] ) / \
+				( prior[gray_index] * phai_[gray_index] + prior[colo_index] * phai_[colo_index]  ) > 0.5 )
+		return true;
+
+	return false;
 }
