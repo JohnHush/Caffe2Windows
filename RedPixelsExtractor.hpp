@@ -16,13 +16,14 @@ class RedPixelsExtractor
  * don't use it in any other circumstances
  */
 {
-	typedef struct mat2d
-	{
-		float a00;
-		float a01;
-		float a10;
-		float a11;
-	}mat2d;
+	public:
+		typedef struct mat2d
+		{
+			float a00;
+			float a01;
+			float a10;
+			float a11;
+		}mat2d;
 
 	private:
 		vector< pair<float , float> > features_;
@@ -83,6 +84,7 @@ class RedPixelsExtractor
 
 	public:
 		RedPixelsExtractor(){};
+		~RedPixelsExtractor(){};
 		void initExtractor( vector<float> phai , vector< pair<float , float > > exp , \
 												vector< pair<float , float> >features );
 
@@ -120,5 +122,10 @@ class RedPixelsExtractor
  		 * like before, and selete the probability of which class is
  		 * bigger than 0.5;
  		 */
+		float relativeLikelihood( float model_a_prior_probability );
+		/*
+		 * the function calculate the likelihood relatively,
+		 * L (M) = sum over i ( P (M) * P( x_i | M ) );
+		 */
 };
 #endif

@@ -1,6 +1,25 @@
 #include "RedPixelsExtractor.hpp"
 #include <iostream>
 #include <stdlib.h>
+#include <cmath>
+
+using std::cout;
+using std::endl;
+
+float RedPixelsExtractor::relativeLikelihood( float MP )
+{
+	float LIKELIHOOD = 0.;
+
+	for ( int iDATA = 0 ; iDATA < features_.size() ; ++ iDATA )
+	{
+		float prior0 = prior_pro( features_[iDATA] , exp_[0] , sigma_[0] );
+		float prior1 = prior_pro( features_[iDATA] , exp_[1] , sigma_[1] );
+
+		LIKELIHOOD += log( MP * ( prior0 * phai_[0] + prior1 * phai_[1] ) );
+
+	}
+	return LIKELIHOOD;
+}
 
 void RedPixelsExtractor::matrix_inversion( RedPixelsExtractor::mat2d & a , mat2d & inverse )
 {
@@ -120,7 +139,7 @@ void RedPixelsExtractor::initExtractor( vector< pair<float , float> >features )
 			 fabs( exp_[0].second- exp_[1].second) < pt_dis * std_[1])
 			TOOCLOSE = true;
 	}
-	while( OUTOFRANGE && TOOCLOSE );
+	while( OUTOFRANGE || TOOCLOSE );
 }
 
 void RedPixelsExtractor::initExtractor( vector<float> phai , vector< pair<float , float> > exp ,\

@@ -1,3 +1,6 @@
+#ifndef BLOB_H
+#define BLOB_H
+
 #include "caffe.pb.h"
 #include <opencv2/opencv.hpp>
 #include <google/protobuf/io/coded_stream.h>
@@ -98,3 +101,5 @@ class MatrixBlob
 			data_[N][C] = value;
 		}
 };
+
+#endif
