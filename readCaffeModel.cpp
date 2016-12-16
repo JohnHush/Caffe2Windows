@@ -40,13 +40,15 @@ int main( void )
 	coded_input->SetTotalBytesLimit(536870912, 268435456);  
  
 	net.ParseFromCodedStream( coded_input ); 
-/*
-	IplImage * imgSrc = cvLoadImage( "/home/pitaloveu/Desktop/test_number/color_9.jpg" , CV_LOAD_IMAGE_COLOR );
+//#define DEBUG
+#ifndef DEBUG
+	IplImage * imgSrc = cvLoadImage( "/home/pitaloveu/Desktop/test_number/color_8.jpg" , CV_LOAD_IMAGE_COLOR );
 
 	IplImage * imgGray = cvCreateImage( cvGetSize( imgSrc ) , 8 , 1 );
 	IplImage * imgThreshold = cvCreateImage( cvGetSize( imgSrc ) , 8 , 1 );
 	cvCvtColor( imgSrc , imgGray , CV_BGR2GRAY );
 
+	IplImage * canny = cvCreateImage( cvGetSize( imgSrc ) , 8 , 1 );
 
 	cvAdaptiveThreshold( imgGray , imgThreshold , 255 , CV_ADAPTIVE_THRESH_MEAN_C , CV_THRESH_BINARY , 55 ,20 );
 	// 55, 20 
@@ -68,9 +70,9 @@ int main( void )
 
 	for ( int i = 0 ; i < 10 ; i++)
 		cout << "i = " << i << "  score = " << score[i] << endl;
-*/
+#endif
 // test on MNIST test set, the accuracy is 99.18%;
-
+#ifdef DEBUG
 	::std::ifstream image_file ( "t10k-images-idx3-ubyte" , std::ios::in | std::ios::binary );
     ::std::ifstream label_file ( "t10k-labels-idx1-ubyte" , std::ios::in | std::ios::binary );
 
@@ -117,10 +119,10 @@ int main( void )
 		if ( findMax( score ) == (int)( label + 0) )
 			count ++;
 
-		if ( 9 == int(label) ){
+		
 		cvShowImage( "9" , imgSrc );
-		cvWaitKey(330);
-		}
+		cvWaitKey();
+		
 
 		if (findMax( score) == int( label + 0 ))
 		{
@@ -129,7 +131,7 @@ int main( void )
 		cout << " test of output = " << int( label ) << endl;
 	}
 
-
+#endif
 	delete coded_input;  
 	delete raw_input;  
 	close(fd);

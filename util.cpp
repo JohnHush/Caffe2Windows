@@ -385,6 +385,20 @@ bool hasRedPixelsAndPickUp ( IplImage * imgSrc , IplImage * imgRst , pair<float 
 			cvSetReal2D( imgRst , irow , icol , cvGetReal2D( imgTMP2 , ycor , xcor ) );
 	}
 
+// test start
+for ( int irow = 0 ; irow < 28 ; ++ irow )
+for ( int icol = 0 ; icol < 28 ; ++ icol )
+	if ( cvGetReal2D( imgRst , irow , icol ) != 0 )
+		cvSetReal2D( imgRst , irow , icol , 255);
+// test end
+/**
+ * seems the problem of number "9" can't be
+ * identified has been fixed by setting 
+ * all non-zero value to 255...
+ * i suppose that's not a good way to solve this
+ * but right now we gonna live with it
+ */
+
 	cvNamedWindow( "show", CV_WINDOW_NORMAL );
 	cvShowImage("show", imgRst);
 	cvWaitKey();
