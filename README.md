@@ -1,10 +1,10 @@
 # orion-eye
 -----------------------------------------------------------------------------------
 ## brief intro
->> * **T**he purpose of this project is identifying the hand-writing digits,  
-* Notice that this project is actually accomplished one functionality, which has  
-* an input image ( maybe with gray scale or RGB type ), and one output the infered  
-* label ( 0 - 9) or NAN( not a number happens when the input actually sends no red pixels)
+    The purpose of this project is identifying the hand-writing digits,  
+ Notice that this project is actually accomplished one functionality, which has  
+ an input image ( maybe with gray scale or RGB type ), and one output the infered  
+ label ( 0 - 9) or NAN( not a number happens when the input actually sends no red pixels)
 -----------------------------------------------------------------------------------
 ## Contents
 >> * 1. one model , which is pretrained in **caffe**. Here we choose **LeNet-5**, this model
