@@ -20,6 +20,7 @@ using google::protobuf::Message;
 #include "Blob.hpp"
 #include "RedPixelsExtractor.hpp"
 #include "util.hpp"
+#include "Binarizator/adaptive_threshold.hpp"
 
 int main( void )
 {
@@ -44,15 +45,13 @@ int main( void )
 #ifndef DEBUG
 	IplImage * imgSrc = cvLoadImage( "/home/pitaloveu/Desktop/test_number/color_8.jpg" , CV_LOAD_IMAGE_COLOR );
 
-	IplImage * imgGray = cvCreateImage( cvGetSize( imgSrc ) , 8 , 1 );
 	IplImage * imgThreshold = cvCreateImage( cvGetSize( imgSrc ) , 8 , 1 );
-	cvCvtColor( imgSrc , imgGray , CV_BGR2GRAY );
 
-	IplImage * canny = cvCreateImage( cvGetSize( imgSrc ) , 8 , 1 );
-
-	cvAdaptiveThreshold( imgGray , imgThreshold , 255 , CV_ADAPTIVE_THRESH_MEAN_C , CV_THRESH_BINARY , 55 ,20 );
-	// 55, 20 
-	// 201.20
+	AdaThre adapt_thresholder( 55 , 20 );
+	adapt_thresholder.binarizate( imgSrc , imgThreshold );
+	cvNamedWindow( "show" , CV_WINDOW_NORMAL );
+	cvShowImage("show", imgThreshold);
+	cvWaitKey();
 
 	for ( int irow = 0 ; irow < imgSrc->height ; ++ irow )
 	for ( int icol = 0 ; icol < imgSrc->width  ; ++ icol )
