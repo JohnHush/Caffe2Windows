@@ -24,6 +24,68 @@ using google::protobuf::Message;
 
 int main( void )
 {
+#define HOUGH_
+	IplImage* src = cvLoadImage( "./test_data/color_5.jpg" , CV_LOAD_IMAGE_COLOR );
+	IplImage* dst = cvCreateImage( cvGetSize(src), 8, 1 );
+	IplImage* color_dst = cvCreateImage( cvGetSize(src), 8, 3 );
+	CvMemStorage* storage = cvCreateMemStorage(0);//存储检测到线段,当然可所以N*1的矩阵数列,若是
+	CvSeq* lines = 0;
+	int i;
+
+	IplImage* src1=cvCreateImage(cvSize(src->width,src->height),IPL_DEPTH_8U,1);
+
+	cvCvtColor(src, src1, CV_BGR2GRAY); //把src转换成灰度图像保存在src1中,重视进行边沿检测必然要
+
+	cvCanny( src1, dst, 50, 200, 3 );//参数50,200的灰度变换
+
+	cvCvtColor( dst, color_dst, CV_GRAY2BGR );
+#if 0
+	lines = cvHoughLines2( dst, storage, CV_HOUGH_STANDARD, 1, CV_PI/180, 100, 0, 0 );//标准霍夫变换后两个参数为0,因为line_storage是内存空间,所以返回一个CvSeq序列布局的指针
+
+	for( i = 0; i < lines->total; i++ )
+	{
+		float* line = (float*)cvGetSeqElem(lines,i);//用GetSeqElem获得直线
+		float rho = line[0];
+		float theta = line[1];//对于SHT和MSHT(标准变换)这里line[0],line[1]是rho(与像素相干单位的距离精度)和theta(弧度测量的角度精度)
+		CvPoint pt1, pt2;
+		double a = cos(theta), b = sin(theta);
+		if( fabs(a) < 0.001 )
+		{
+			pt1.x = pt2.x = cvRound(rho);
+			pt1.y = 0;
+			pt2.y = color_dst->height;
+		}
+		else if( fabs(b) < 0.001 )
+		{
+			pt1.y = pt2.y = cvRound(rho);
+			pt1.x = 0;
+			pt2.x = color_dst->width;
+		}
+		else
+		{
+			pt1.x = 0;
+			pt1.y = cvRound(rho/b);
+			pt2.x = cvRound(rho/a);
+			pt2.y = 0;
+		}
+		cvLine( color_dst, pt1, pt2, CV_RGB(255,0,0), 3, 8 );
+	}
+#else
+	lines = cvHoughLines2( dst, storage, CV_HOUGH_PROBABILISTIC, 1, CV_PI/180, 80, 30, 5 );
+	for( i = 0; i < lines->total; i++ )
+	{
+		CvPoint* line = (CvPoint*)cvGetSeqElem(lines,i);
+		cvLine( color_dst, line[0], line[1], CV_RGB(255,0,0), 3, 8 );
+	}
+#endif
+	cvNamedWindow( "Source", CV_WINDOW_NORMAL );
+	cvShowImage( "Source", src );
+
+	cvNamedWindow( "Hough", CV_WINDOW_NORMAL );
+	cvShowImage( "Hough", color_dst );
+
+	cvWaitKey(0);
+#ifndef HOUGH_
 	const char * filename = "lenet_iter_10000.caffemodel";
 
 	caffe::NetParameter net;
@@ -41,7 +103,6 @@ int main( void )
 	coded_input->SetTotalBytesLimit(536870912, 268435456);  
  
 	net.ParseFromCodedStream( coded_input ); 
-//#define DEBUG
 #ifndef DEBUG
 	IplImage * imgSrc = cvLoadImage( "./test_data/color_8.jpg" , CV_LOAD_IMAGE_COLOR );
 
@@ -136,4 +197,5 @@ int main( void )
 	close(fd);
 
 	return 0;
+#endif
 }
