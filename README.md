@@ -1,6 +1,6 @@
 # orion-eye
 -----------------------------------------------------------------------------------
-$$\sqrt{3x-1}+(1+x)^2$$
+this expression $\sqrt{3x-1}+(1+x)^2$ is an,,,
 ## brief intro
  The purpose of this project is identifying the hand-writing digits,
  Notice that this project is actually accomplished one functionality, which has
