@@ -43,7 +43,7 @@ int main( void )
 	net.ParseFromCodedStream( coded_input ); 
 //#define DEBUG
 #ifndef DEBUG
-	IplImage * imgSrc = cvLoadImage( "/home/pitaloveu/Desktop/test_number/color_8.jpg" , CV_LOAD_IMAGE_COLOR );
+	IplImage * imgSrc = cvLoadImage( "./test_data/color_8.jpg" , CV_LOAD_IMAGE_COLOR );
 
 	IplImage * imgThreshold = cvCreateImage( cvGetSize( imgSrc ) , 8 , 1 );
 

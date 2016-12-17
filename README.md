@@ -1,6 +1,6 @@
 # orion-eye
 -----------------------------------------------------------------------------------
-
+$\sqrt{3x-1}+(1+x)^2$
 ## brief intro
  The purpose of this project is identifying the hand-writing digits,
  Notice that this project is actually accomplished one functionality, which has
