@@ -25,7 +25,7 @@ using google::protobuf::Message;
 int main( void )
 {
 #define HOUGH_
-	IplImage* src = cvLoadImage( "./test_data/color_5.jpg" , CV_LOAD_IMAGE_COLOR );
+	IplImage* src = cvLoadImage( "./test_data/line2_test.jpg" , CV_LOAD_IMAGE_COLOR );
 	IplImage* dst = cvCreateImage( cvGetSize(src), 8, 1 );
 	IplImage* color_dst = cvCreateImage( cvGetSize(src), 8, 3 );
 	CvMemStorage* storage = cvCreateMemStorage(0);//存储检测到线段,当然可所以N*1的矩阵数列,若是
@@ -71,7 +71,7 @@ int main( void )
 		cvLine( color_dst, pt1, pt2, CV_RGB(255,0,0), 3, 8 );
 	}
 #else
-	lines = cvHoughLines2( dst, storage, CV_HOUGH_PROBABILISTIC, 1, CV_PI/180, 80, 30, 5 );
+	lines = cvHoughLines2( dst, storage, CV_HOUGH_PROBABILISTIC, 1, CV_PI/180, 50, 30, 5 );
 	for( i = 0; i < lines->total; i++ )
 	{
 		CvPoint* line = (CvPoint*)cvGetSeqElem(lines,i);
