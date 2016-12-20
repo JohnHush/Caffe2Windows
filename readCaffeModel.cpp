@@ -6,6 +6,7 @@
 #include <string>
 #include <vector>
 #include <fstream>
+#include "RedPixelDetector/mixed_gaussian_rpd.hpp"
 
 using namespace std;
 using google::protobuf::io::FileInputStream;
@@ -90,19 +91,6 @@ int main( void )
 
 	caffe::NetParameter net;
 
-//	int fd = open( filename , O_RDONLY );
-
-//	if ( fd == -1 )
-//	{
-//		cout << "File not found :" << filename << endl;
-//	}
-//	FileInputStream * input = new FileInputStream( fd );
-	
-//	ZeroCopyInputStream* raw_input = new FileInputStream(fd);  
-//	CodedInputStream* coded_input = new CodedInputStream(raw_input);  
-//	coded_input->SetTotalBytesLimit(536870912, 268435456);  
- 
-//	net.ParseFromCodedStream( coded_input ); 
 	fstream input( filename , ios::in | ios::binary);	
 	net.ParseFromIstream( &input );
 #ifndef DEBUG
@@ -110,7 +98,7 @@ int main( void )
 
 	IplImage * imgThreshold = cvCreateImage( cvGetSize( imgSrc ) , 8 , 1 );
 
-	AdaThre adapt_thresholder( 55 , 20 );
+	AdaThre adapt_thresholder( 201 , 20 );
 	adapt_thresholder.binarizate( imgSrc , imgThreshold );
 	cvNamedWindow( "show" , CV_WINDOW_NORMAL );
 	cvShowImage("show", imgThreshold);
@@ -120,15 +108,27 @@ int main( void )
 	for ( int icol = 0 ; icol < imgSrc->width  ; ++ icol )
 	{
 		if ( cvGetReal2D( imgThreshold , irow , icol ) == 255 )
-			cvSet2D( imgSrc , irow , icol , cvScalar(255,255,255));
+			cvSet2D( imgSrc , irow , icol , cvScalar(0,0,0) );
 	}
 
-	IplImage * imgRst = cvCreateImage( cvSize( 28 , 28 ) , 8 , 1 );
-	pair<float , float> MODEL_PRIOR = make_pair( 0.5 , 0.5 );
-	bool st = hasRedPixelsAndPickUp( imgSrc , imgRst , MODEL_PRIOR );
+	MixedGaussianRPD MGPRD( imgSrc );
+
+
+	MGPRD.hasRedPixels();
+	IplImage * imgcolor = cvCreateImage( cvSize( 28 , 28 ) , 8  , 1 );
+	MGPRD.getRedPixels( imgcolor );
+
+	cvNamedWindow( "show" , CV_WINDOW_NORMAL );
+	cvShowImage("show", imgcolor );
+	cvWaitKey();
+	//test end
+
+//	IplImage * imgRst = cvCreateImage( cvSize( 28 , 28 ) , 8 , 1 );
+//	pair<float , float> MODEL_PRIOR = make_pair( 0.5 , 0.5 );
+//	bool st = hasRedPixelsAndPickUp( imgSrc , imgRst , MODEL_PRIOR );
 
 	vector<float> score;
-	compute_score( imgRst , net , score );
+	compute_score( imgcolor , net , score );
 
 	for ( int i = 0 ; i < 10 ; i++)
 		cout << "i = " << i << "  score = " << score[i] << endl;
