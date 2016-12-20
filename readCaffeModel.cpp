@@ -132,6 +132,9 @@ int main( void )
 
 	for ( int i = 0 ; i < 10 ; i++)
 		cout << "i = " << i << "  score = " << score[i] << endl;
+
+	char s ;
+	cin >>s;
 #endif
 // test on MNIST test set, the accuracy is 99.18%;
 #ifdef DEBUG

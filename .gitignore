@@ -11,3 +11,14 @@
 *.lai
 *.la
 *.a
+
+# windows MSVC project things...
+*.vcxproj*
+*.sln
+*.suo
+*.sdf
+*.user
+Debug*
+ipch*
+*.filters
+*.opensdf
