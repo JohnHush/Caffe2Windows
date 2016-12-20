@@ -30,5 +30,5 @@ We basically break the project into several parts, the two main parts are **Mode
 	- **Prediction:** if in **Red Pixels Extraction** we got a **true** return value, which means we have found some red pixels, the extracted 28\*28 size image is sent to the model, the output label is the one with highest score.  
 
 ## Concluding Remarks
-...
+ test user.name 
 ***
