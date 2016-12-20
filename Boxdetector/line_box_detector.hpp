@@ -21,8 +21,8 @@ class LineBoxDetector : public BoxDetector
 	public:
 		LineBoxDetector( float space_gap , float angle_gap ): spaceGap_(space_gap), 
 				angleGap_(angle_gap){}
-		~LineBoxDetector(){}
-		CvRect detect ( const IplImage * imgSrc );
-}
+		virtual ~LineBoxDetector(){}
+		virtual CvRect detect ( const IplImage * imgSrc );
+};
 
 #endif
