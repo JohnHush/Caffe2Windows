@@ -90,19 +90,21 @@ int main( void )
 
 	caffe::NetParameter net;
 
-	int fd = open( filename , O_RDONLY );
+//	int fd = open( filename , O_RDONLY );
 
-	if ( fd == -1 )
-	{
-		cout << "File not found :" << filename << endl;
-	}
-	FileInputStream * input = new FileInputStream( fd );
+//	if ( fd == -1 )
+//	{
+//		cout << "File not found :" << filename << endl;
+//	}
+//	FileInputStream * input = new FileInputStream( fd );
 	
-	ZeroCopyInputStream* raw_input = new FileInputStream(fd);  
-	CodedInputStream* coded_input = new CodedInputStream(raw_input);  
-	coded_input->SetTotalBytesLimit(536870912, 268435456);  
+//	ZeroCopyInputStream* raw_input = new FileInputStream(fd);  
+//	CodedInputStream* coded_input = new CodedInputStream(raw_input);  
+//	coded_input->SetTotalBytesLimit(536870912, 268435456);  
  
-	net.ParseFromCodedStream( coded_input ); 
+//	net.ParseFromCodedStream( coded_input ); 
+	fstream input( filename , ios::in | ios::binary);	
+	net.ParseFromIstream( &input );
 #ifndef DEBUG
 	IplImage * imgSrc = cvLoadImage( "./test_data/color_8.jpg" , CV_LOAD_IMAGE_COLOR );
 
@@ -192,9 +194,9 @@ int main( void )
 	}
 
 #endif
-	delete coded_input;  
-	delete raw_input;  
-	close(fd);
+//	delete coded_input;  
+//	delete raw_input;  
+//	close(fd);
 
 	return 0;
 
