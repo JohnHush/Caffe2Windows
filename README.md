@@ -8,6 +8,9 @@ The purpose of this project is to automatically identify the hand-writing digits
 * **input:** an **IplImage \*** image ( could be gray scale or RGB type ).
 * **output:** an output show the infered label ( 0 - 9) or NAN( when the input actually sends no red pixels )
 
+## feedback
+* 1. there will be some numerical unstable problem when using gray scale image,i.e 8.jpg
+and return the determinant is zero warning..
 ## Contents
 
 We basically break the project into several parts, the two main parts are **Model Training Phase** and **Data Prediction Phase**.  
@@ -30,5 +33,5 @@ We basically break the project into several parts, the two main parts are **Mode
 	- **Prediction:** if in **Red Pixels Extraction** we got a **true** return value, which means we have found some red pixels, the extracted 28\*28 size image is sent to the model, the output label is the one with highest score.  
 
 ## Concluding Remarks
-...
+ test user.name 
 ***
