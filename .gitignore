@@ -22,3 +22,5 @@ Debug*
 ipch*
 *.filters
 *.opensdf
+
+.sconsign.dblite
