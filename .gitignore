@@ -22,3 +22,6 @@ Debug*
 ipch*
 *.filters
 *.opensdf
+
+caffe.pb.h
+caffe.pb.cc
