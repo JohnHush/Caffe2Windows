@@ -235,9 +235,9 @@ for ( int icol = 0 ; icol < 28 ; ++ icol )
  * but right now we gonna live with it
  */
 
-    cvNamedWindow( "show", CV_WINDOW_NORMAL );
-    cvShowImage("show", imgRst);
-    cvWaitKey();
+    //cvNamedWindow( "show", CV_WINDOW_NORMAL );
+    //cvShowImage("show", imgRst);
+    //cvWaitKey();
 
     cvReleaseImage( &imgColorPixels );
     cvReleaseImage( &img4Contour );

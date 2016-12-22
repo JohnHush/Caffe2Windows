@@ -16,6 +16,7 @@ class MixedGaussianRPD : public RedPixelDetector
 		virtual void hasRedPixels();
 		virtual void getRedPixels( IplImage * imgRed );
 		virtual ~MixedGaussianRPD(){}
+		bool redOrNot(){ return hasRed_; }
 
 	protected:
 		RedPixelsExtractor RedPtEx_;
