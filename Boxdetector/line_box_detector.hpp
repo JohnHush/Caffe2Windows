@@ -3,6 +3,10 @@
 
 #include "../boxDetector.hpp"
 #include <opencv2/opencv.hpp>
+#include <algorithm>
+#include <vector>
+
+using std::pair;
 
 class LineBoxDetector : public BoxDetector
 {
@@ -12,17 +16,16 @@ class LineBoxDetector : public BoxDetector
 		 * filter out the lines within the gap in both direction
 		 * which means we only need some lines don't gather together
 		 */
-		float angleGap_;
-		/*
- 		 * the angle distortion the program could tolerate, 
- 		 * the max difference between two lines is 0+-angleGap_ or 90 += angleGap_
- 		 * which represent parallel or vertical lines, respectively.
- 		 */
 	public:
-		LineBoxDetector( float space_gap , float angle_gap ): spaceGap_(space_gap), 
-				angleGap_(angle_gap){}
+		explicit LineBoxDetector( IplImage * imgSrc , float space_gap ): 
+			BoxDetector( imgSrc ), spaceGap_(space_gap){}
 		virtual ~LineBoxDetector(){}
-		virtual CvRect detect ( const IplImage * imgSrc );
+		virtual void detectBox();
+		void showOnImage() const ;
+		inline static bool sortT( const pair<int , int > & a , const pair<int , int> & b)
+		{
+			return (abs(a.first) + abs(a.second)) > (abs(b.first) + abs(b.second));
+		}
 };
 
 #endif

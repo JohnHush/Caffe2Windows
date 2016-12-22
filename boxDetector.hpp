@@ -5,12 +5,22 @@
 #include <opencv2/opencv.hpp>
 #include <string>
 
+/*
+ * This class aims to search an box in the image, the searched box could be the resulted 
+ * shape of warp transformation of a normal rectangular box,
+ * and the boxRegion_ should be the region after we transform back the image
+ */
+
 class BoxDetector
 {
 	public:
-		BoxDetector(){}
+		explicit BoxDetector( IplImage * imgSrc ): imgSrc_(imgSrc){}
 		virtual ~BoxDetector(){}
-		virtual CvRect detect( const IplImage *imgSrc ) = 0;
+		virtual void detectBox() = 0;
+		inline CvRect getBoxRegion() const { return boxRegion_; }
+	protected:
+		CvRect boxRegion_;
+		IplImage * imgSrc_;
 };
 
 #endif

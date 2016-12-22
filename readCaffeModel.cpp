@@ -7,6 +7,7 @@
 #include <vector>
 #include <fstream>
 #include "RedPixelDetector/mixed_gaussian_rpd.hpp"
+#include "Boxdetector/line_box_detector.hpp"
 
 using namespace std;
 using google::protobuf::io::FileInputStream;
@@ -95,6 +96,10 @@ int main( void )
 	net.ParseFromIstream( &input );
 #ifndef DEBUG
 	IplImage * imgSrc = cvLoadImage( "./test_data/color_8.jpg" , CV_LOAD_IMAGE_COLOR );
+	LineBoxDetector tst( imgSrc , 10 );
+	tst.detectBox();
+
+	return 1;
 
 	IplImage * imgThreshold = cvCreateImage( cvGetSize( imgSrc ) , 8 , 1 );
 
