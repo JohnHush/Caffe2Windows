@@ -23,6 +23,5 @@ ipch*
 *.filters
 *.opensdf
 
-.sconsign.dblite
 caffe.pb.h
 caffe.pb.cc
