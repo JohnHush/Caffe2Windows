@@ -24,7 +24,9 @@ void transfer2matrix( WeightBlob & bottom , MatrixBlob & up );
 void inner_product( MatrixBlob & bottom , MatrixBlob & weight , BiasBlob & bias , MatrixBlob & inner1_result );
 void relu( MatrixBlob & bottom );
 void compute_score( IplImage * imgSrc , ::caffe::NetParameter & net , vector<float> & score );
-int findMax( vector<float> & score );
+
+template <typename T>
+int findMax( vector<T> & score );
 
 void matrix_inversion_2d( MAT2D & a , MAT2D & inverse );
 float prior_pro_2d( pair<float , float> & x , pair<float, float> & miu , MAT2D & sigma );

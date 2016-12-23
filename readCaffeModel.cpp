@@ -95,9 +95,10 @@ int main( void )
 	fstream input( filename , ios::in | ios::binary);	
 	net.ParseFromIstream( &input );
 #ifndef DEBUG
-	IplImage * imgSrc = cvLoadImage( "./test_data/color_8.jpg" , CV_LOAD_IMAGE_COLOR );
-	LineBoxDetector tst( imgSrc , 10 );
+	IplImage * imgSrc = cvLoadImage( "./test_data/line2_test.jpg" , CV_LOAD_IMAGE_COLOR );
+	LineBoxDetector tst( imgSrc , 100 );
 	tst.detectBox();
+	tst.showOnImage();
 
 	return 1;
 

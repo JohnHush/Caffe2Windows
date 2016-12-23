@@ -412,9 +412,10 @@ for ( int icol = 0 ; icol < 28 ; ++ icol )
 	return true;
 }
 
-int findMax( vector<float> & score )
+template <typename T>
+int findMax( vector<T> & score )
 {
-    float max_ = score[0];
+    T max_ = score[0];
     int index_ = 0;
     for ( int i = 1 ; i < score.size() ; ++ i )
         if ( max_ < score[i] )
@@ -424,6 +425,8 @@ int findMax( vector<float> & score )
         }
     return index_;
 }
+
+template int findMax( vector<int> & score );
 
 void relu( MatrixBlob & bottom )
 {

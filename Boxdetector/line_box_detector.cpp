@@ -2,6 +2,7 @@
 #include <opencv2/opencv.hpp>
 #include <iostream>
 #include <vector>
+#include "../util.hpp"
 
 using std::vector;
 using std::pair;
@@ -67,7 +68,53 @@ void LineBoxDetector::detectBox ()
 			}
 		}
 	}
-	sort( scoreP.begin() , scoreP.end() , sortT );
-	sort( scoreV.begin() , scoreV.end() , sortT );
+	vector<int> ModuleP( WIDTH );
+	vector<int> ModuleV( HEIGH );
 
+	for ( int i = 0 ; i < WIDTH ; ++i )
+		ModuleP[i] = scoreP[i].first + abs( scoreP[i].second );
+
+	for ( int i = 0 ; i < HEIGH ; ++i )
+		ModuleV[i] = scoreV[i].second + abs( scoreV[i].first );
+
+	int maxIndexP = findMax( ModuleP );
+	int maxIndexV = findMax( ModuleV );
+	// find the first line in x and y direction, respectively.
+
+	for ( int i = 0 ; i < WIDTH ; ++i )
+		if ( i > maxIndexP - spaceGap_ && i < maxIndexP + spaceGap_ )
+			ModuleP[i] = 0;
+
+	for ( int i = 0 ; i < HEIGH ; ++i )
+		if ( i > maxIndexV - spaceGap_ && i < maxIndexV + spaceGap_ )
+			ModuleV[i] = 0;
+
+	int maxIndexP2 = findMax( ModuleP );
+	int maxIndexV2 = findMax( ModuleV );
+	// find another line in x and y direction, respectively.
+
+	int leftLine = maxIndexP >maxIndexP2 ? maxIndexP2:maxIndexP;
+	int rightLine = maxIndexP >maxIndexP2 ? maxIndexP:maxIndexP2;
+	int upLine = maxIndexV > maxIndexV2 ?maxIndexV2:maxIndexV;
+	int downLine = maxIndexV > maxIndexV2 ?maxIndexV:maxIndexV2;
+
+	boxRegion_ = cvRect( leftLine , upLine , rightLine-leftLine , downLine-upLine );
+
+	cvReleaseImage( &imgGray );
+	cvReleaseMat( &SobelX );
+	cvReleaseMat( &SobelY );
+}
+
+void LineBoxDetector::showOnImage() const
+{
+	IplImage * imgShow = cvCloneImage( imgSrc_ );
+
+	cvRectangle( imgShow , cvPoint( boxRegion_.x , boxRegion_.y) , 
+			cvPoint( boxRegion_.x + boxRegion_.width , boxRegion_.y + boxRegion_.height ) , cvScalar(255) );
+
+	cvNamedWindow("show" , CV_WINDOW_NORMAL );
+	cvShowImage("show" , imgShow);
+	cvWaitKey();
+
+	cvReleaseImage( &imgShow );
 }
