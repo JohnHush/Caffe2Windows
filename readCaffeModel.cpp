@@ -44,7 +44,7 @@ int main( void )
 
 	AdaThre adapt_thresholder( 201 , 20 );
 	adapt_thresholder.binarizate( imgSrc , imgThreshold );
-	cvNamedWindow( "show" , CV_WINDOW_NORMAL );
+	cvNamedWindow( "show" , CV_WINDOW_AUTOSIZE );
 	cvShowImage("show", imgThreshold);
 	cvWaitKey();
 
