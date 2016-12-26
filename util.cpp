@@ -427,6 +427,7 @@ int findMax( vector<T> & score )
 }
 
 template int findMax( vector<int> & score );
+template int findMax( vector<float> & score );
 
 void relu( MatrixBlob & bottom )
 {
