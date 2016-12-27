@@ -7,7 +7,7 @@
 #include <opencv2/opencv.hpp>
 #include <vector>
 #include <algorithm>
-#include <openblas/cblas.h>
+#include <cblas.h>
 
 void matrix_m_matrix( float *a , float *b , int m , int n , int k , float * c );
 
@@ -21,6 +21,10 @@ typedef struct MAT2D
 }MAT2D;
 
 void pooling( float *before , float *after , const int channel , const int width , const int height );
+
+template <typename Dtype>
+void wrapper_cblas_gemv(const CBLAS_TRANSPOSE TransA, const int M,const int N, const Dtype alpha,
+                            const Dtype* A, const Dtype* x, const Dtype beta, Dtype* y);
 template <typename Dtype>
 void wrapper_cblas_gemm( const CBLAS_TRANSPOSE TransA, const CBLAS_TRANSPOSE TransB, const int M, const int N, 
 				const int K, const Dtype alpha, const Dtype* A, const Dtype* B, const Dtype beta, Dtype* C);

@@ -38,6 +38,20 @@ void pooling( float *before , float *after , const int channel , const int width
 	}
 }
 
+template <>
+void wrapper_cblas_gemv<float>(const CBLAS_TRANSPOSE TransA, const int M, const int N, const float alpha,
+							const float* A, const float* x, const float beta, float* y)
+{
+	cblas_sgemv(CblasRowMajor, TransA, M, N, alpha, A, N, x, 1, beta, y, 1); 
+}
+
+template <>
+void wrapper_cblas_gemv<double>(const CBLAS_TRANSPOSE TransA, const int M,const int N, const double alpha, 
+							const double* A, const double* x, const double beta, double* y)
+{
+	cblas_dgemv(CblasRowMajor, TransA, M, N, alpha, A, N, x, 1, beta, y, 1); 
+}
+
 template<>
 void wrapper_cblas_gemm<float>( const CBLAS_TRANSPOSE TransA, const CBLAS_TRANSPOSE TransB, 
 								const int M, const int N, const int K, const float alpha, 
@@ -699,7 +713,7 @@ void compute_score( IplImage * imgSrc , ::caffe::NetParameter & net , vector<flo
 
     WeightBlob pooling2( pool2_col , 1 , 50 , 4 , 4 );
 
-//    WeightBlob conv2_result( conv2_col , 1 , 50 , 8 , 8 );
+//  WeightBlob conv2_result( conv2_col , 1 , 50 , 8 , 8 );
 //	WeightBlob pooling1( pool1_col , 1 , 20 , 12 , 12 );
 
 	delete [] imgData;
