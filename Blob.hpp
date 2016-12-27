@@ -60,6 +60,7 @@ class WeightBlob
     public:
         explicit WeightBlob( const ::caffe::BlobProto & blob );
         explicit WeightBlob( const int N , const int C , const int H , const int W );
+        explicit WeightBlob( const float * , const int N , const int C , const int H , const int W );
         WeightBlob():data_(NULL) , count_(0){};
         ~WeightBlob();
 

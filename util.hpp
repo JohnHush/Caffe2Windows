@@ -7,6 +7,9 @@
 #include <opencv2/opencv.hpp>
 #include <vector>
 #include <algorithm>
+#include <openblas/cblas.h>
+
+void matrix_m_matrix( float *a , float *b , int m , int n , int k , float * c );
 
 typedef struct MAT2D
 {
@@ -16,6 +19,15 @@ typedef struct MAT2D
 	float a11;
 
 }MAT2D;
+
+void pooling( float *before , float *after , const int channel , const int width , const int height );
+template <typename Dtype>
+void wrapper_cblas_gemm( const CBLAS_TRANSPOSE TransA, const CBLAS_TRANSPOSE TransB, const int M, const int N, 
+				const int K, const Dtype alpha, const Dtype* A, const Dtype* B, const Dtype beta, Dtype* C);
+
+template <typename Dtype>
+void im2col(const Dtype* data_im, const int channels, const int height, 
+				const int width, const int kernel_h, const int kernel_w, Dtype* data_col);
 
 void conv1_gemm( IplImage * imgSrc , WeightBlob & weight , BiasBlob & bias , WeightBlob & conv1_result );
 void max_pooling( WeightBlob & bottom , WeightBlob & up );
@@ -33,10 +45,10 @@ float prior_pro_2d( pair<float , float> & x , pair<float, float> & miu , MAT2D &
 void feature_exp( vector< pair<float , float> > & features , pair<float , float> & miu );
 void feature_cov( vector< pair<float , float> > & features , MAT2D & sigma );
 
+bool sort_area( const pair<CvRect , double > & feature1 , const pair<CvRect , double> & feature2 );
 bool hasRedPixelsAndPickUp( IplImage * imgSrc , IplImage * imgRst , pair<float, float> & MODEL_PRIOR , const \
 								float & epsilon = 100. );
 
-bool sort_area( const pair<CvRect , double > & feature1 , const pair<CvRect , double> & feature2 );
 /*
  * the function detect if there are any red pixels in the input image
  * the theory is depicted as follow:

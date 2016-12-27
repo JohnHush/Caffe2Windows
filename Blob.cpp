@@ -21,6 +21,41 @@ BiasBlob::BiasBlob( const ::caffe::BlobProto & blob )
     for( int i = 0 ; i < length_ ; ++ i )
         data_[i] = blob.data(i);
 }
+WeightBlob::WeightBlob( const float * data_in , const int N , const int C , const int H , const int W )
+{
+    shape_.clear();
+    shape_.resize(4);
+
+    shape_[0] = N;
+    shape_[1] = C;
+    shape_[2] = H;
+    shape_[3] = W;
+
+    count_ = shape_[0] * shape_[1] * shape_[2] * shape_[3];
+
+	data_ = new float *** [ shape_[0] ];
+
+    for( int iNUM = 0 ; iNUM < shape_[0] ; ++ iNUM )
+    {
+        data_[iNUM] = new float ** [ shape_[1] ];
+        for( int iCHA = 0 ; iCHA < shape_[1] ; ++ iCHA )
+        {
+            data_[iNUM][iCHA] = new float * [ shape_[2] ];
+            for( int iHEI = 0 ; iHEI < shape_[2] ; ++ iHEI )
+            {
+                data_[iNUM][iCHA][iHEI] = new float [ shape_[3] ];
+            }
+        }
+    }
+
+    for( int iNUM = 0 ; iNUM < shape_[0] ; ++ iNUM )
+    for( int iCHA = 0 ; iCHA < shape_[1] ; ++ iCHA )
+    for( int iHEI = 0 ; iHEI < shape_[2] ; ++ iHEI )
+    for( int iWID = 0 ; iWID < shape_[3] ; ++ iWID )
+        data_[iNUM][iCHA][iHEI][iWID] = data_in[ iNUM * shape_[1] *shape_[2] * shape_[3] + \
+                                iCHA * shape_[2] * shape_[3] + iHEI * shape_[3] + iWID ];
+
+}
 WeightBlob::WeightBlob( const int N , const int C , const int H , const int W )
 {
     shape_.clear();

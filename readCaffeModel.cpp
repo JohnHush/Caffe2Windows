@@ -33,20 +33,20 @@ int main( void )
 	fstream input( filename , ios::in | ios::binary);	
 	net.ParseFromIstream( &input );
 #ifndef DEBUG
-	IplImage * imgSrc = cvLoadImage( "./test_data/line2_test.jpg" , CV_LOAD_IMAGE_COLOR );
-	LineBoxDetector tst( imgSrc , 100 );
-	tst.detectBox();
-	tst.showOnImage();
+	IplImage * imgSrc = cvLoadImage( "./test_data/color_8.jpg" , CV_LOAD_IMAGE_COLOR );
+//	LineBoxDetector tst( imgSrc , 100 );
+//	tst.detectBox();
+//	tst.showOnImage();
 
-	return 1;
+//	return 1;
 
 	IplImage * imgThreshold = cvCreateImage( cvGetSize( imgSrc ) , 8 , 1 );
 
 	AdaThre adapt_thresholder( 201 , 20 );
 	adapt_thresholder.binarizate( imgSrc , imgThreshold );
-	cvNamedWindow( "show" , CV_WINDOW_AUTOSIZE );
-	cvShowImage("show", imgThreshold);
-	cvWaitKey();
+//	cvNamedWindow( "show" , CV_WINDOW_AUTOSIZE );
+//	cvShowImage("show", imgThreshold);
+//	cvWaitKey();
 
 	for ( int irow = 0 ; irow < imgSrc->height ; ++ irow )
 	for ( int icol = 0 ; icol < imgSrc->width  ; ++ icol )
@@ -62,9 +62,9 @@ int main( void )
 	IplImage * imgcolor = cvCreateImage( cvSize( 28 , 28 ) , 8  , 1 );
 	MGPRD.getRedPixels( imgcolor );
 
-	cvNamedWindow( "show" , CV_WINDOW_NORMAL );
-	cvShowImage("show", imgcolor );
-	cvWaitKey();
+//	cvNamedWindow( "show" , CV_WINDOW_NORMAL );
+//	cvShowImage("show", imgcolor );
+//	cvWaitKey();
 	//test end
 
 //	IplImage * imgRst = cvCreateImage( cvSize( 28 , 28 ) , 8 , 1 );
@@ -77,8 +77,6 @@ int main( void )
 	for ( int i = 0 ; i < 10 ; i++)
 		cout << "i = " << i << "  score = " << score[i] << endl;
 
-	char s ;
-	cin >>s;
 #endif
 // test on MNIST test set, the accuracy is 99.18%;
 #ifdef DEBUG

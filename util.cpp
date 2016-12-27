@@ -5,6 +5,94 @@
 using std::cout;
 using std::endl;
 
+void matrix_m_matrix( float *a , float *b , int LEFT , int MIDD , int RIGH , float * c )
+{
+	for ( int i = 0 ; i < LEFT ; i++ )
+	for ( int j = 0 ; j < RIGH ; j++ )
+	{
+		c[ i * RIGH + j ] = 0.;
+		for ( int k = 0 ; k < MIDD ; k ++ )
+			c[ i * RIGH + j ] += a[ i * MIDD + k ] * b[ k * RIGH + j ];
+	}
+}
+
+void pooling( float *before , float *after , const int channel , const int width , const int height )
+{
+	int ah = height/2;
+	int aw = width/2;
+
+	for ( int ic = channel ; ic-- ; before += width*height , after += ah *aw )
+	for ( int ih = 0 ; ih < ah ; ++ ih )
+	for ( int iw = 0 ; iw < aw ; ++ iw )
+	{
+		after[ ih * aw + iw ] = before[ 2 * ih * width + 2 * iw ];
+		
+		if ( after[ ih * aw + iw ] < before[ 2 * ih * width + 2 * iw + 1 ] )
+			after[ ih * aw + iw ] = before[ 2 * ih * width + 2 * iw + 1 ];
+
+		if ( after[ ih * aw + iw ] < before[ (2 * ih + 1) * width + 2 * iw ] )
+			after[ ih * aw + iw ] = before[ (2 * ih + 1) * width + 2 * iw ];
+
+		if ( after[ ih * aw + iw ] < before[ (2 * ih + 1) * width + 2 * iw + 1] )
+			after[ ih * aw + iw ] = before[ (2 * ih + 1) * width + 2 * iw + 1];
+	}
+}
+
+template<>
+void wrapper_cblas_gemm<float>( const CBLAS_TRANSPOSE TransA, const CBLAS_TRANSPOSE TransB, 
+								const int M, const int N, const int K, const float alpha, 
+								const float* A, const float* B, const float beta, float* C)
+{
+	int lda = (TransA == CblasNoTrans) ? K : M;
+	int ldb = (TransB == CblasNoTrans) ? N : K;
+
+	cblas_sgemm(CblasRowMajor, TransA, TransB, M, N, K, alpha, A, lda, B, ldb, beta, C, N);
+}
+
+template<>
+void wrapper_cblas_gemm<double>(const CBLAS_TRANSPOSE TransA, const CBLAS_TRANSPOSE TransB, 
+								const int M, const int N, const int K, const double alpha, 
+								const double* A, const double* B, const double beta, double* C)
+{
+	int lda = (TransA == CblasNoTrans) ? K : M;
+	int ldb = (TransB == CblasNoTrans) ? N : K;
+	cblas_dgemm(CblasRowMajor, TransA, TransB, M, N, K, alpha, A, lda, B, ldb, beta, C, N);
+}
+
+inline bool is_a_ge_zero_and_a_lt_b(int a, int b)
+{
+	return static_cast<unsigned>(a) < static_cast<unsigned>(b);
+}
+
+template <typename Dtype>
+void im2col( const Dtype* data_im, const int channels, const int height, 
+                const int width, const int kernel_h, const int kernel_w, Dtype* data_col )
+{
+	const int output_h = height - kernel_h + 1;
+	const int output_w = width  - kernel_w + 1;
+	const int channel_size = height * width;
+
+	for (int channel = channels; channel--; data_im += channel_size)
+    for (int kernel_row = 0; kernel_row < kernel_h; kernel_row++)
+	for (int kernel_col = 0; kernel_col < kernel_w; kernel_col++)
+	{
+		int input_row = kernel_row;
+		for (int output_rows = output_h; output_rows; output_rows--)
+		{
+			int input_col = kernel_col;
+			for (int output_col = output_w; output_col; output_col--)
+			{
+				*(data_col++) = data_im[input_row * width + input_col];
+				input_col ++;
+			}
+			input_row ++;
+		}
+	}
+}
+
+template void im2col( const float* data_im, const int channels, const int height,
+		                const int width, const int kernel_h, const int kernel_w, float* data_col );
+
 bool sort_area( const pair<CvRect , double > & feature1 , const pair<CvRect , double> & feature2 )
 {
     return feature1.second > feature2.second;
@@ -549,24 +637,97 @@ void compute_score( IplImage * imgSrc , ::caffe::NetParameter & net , vector<flo
 {
     score.resize(10);
     // conve1
+#define DEBUG_
+#ifndef DEBUG_
+
     WeightBlob kernel1( net.layer(1).blobs(0) );
     BiasBlob bias1( net.layer(1).blobs(1));
-    WeightBlob conv_result( 1 , net.layer(1).blobs(0).shape().dim(0) , 24 , 24 );
+	WeightBlob conv_result( 1 , net.layer(1).blobs(0).shape().dim(0) , 24 , 24 );
     conv1_gemm( imgSrc , kernel1 , bias1 , conv_result );
+#else
+//test of conv1...
 
+	float * imgData		= new float [ 28 * 28 ];
+	float * k1			= new float [ 20 * 25 ];
+	float * b1			= new float [ 20 ];
+	float * imgData_col = new float [ 24 * 24 * 25 ];
+	float * conv1_col	= new float [ 20 * 24 * 24 ];
+	float * pool1_col	= new float [ 20 * 12 * 12 ];
+
+	for ( int irow = 0 ; irow < 28 ; ++ irow )
+	for ( int icol = 0 ; icol < 28 ; ++ icol )
+	{
+		imgData[ irow * 28 + icol ] = cvGetReal2D( imgSrc , irow , icol ) * 0.00390625;
+	}
+
+	im2col( imgData , 1 , 28, 28 , 5 , 5 , imgData_col );
+
+	for ( int i = 0 ; i < 20 * 25 ; ++i )
+		k1[i] = net.layer(1).blobs(0).data(i);
+
+	for ( int i = 0 ; i < 20 ; ++i )
+		b1[i] =  net.layer(1).blobs(1).data(i);
+
+	wrapper_cblas_gemm<float>( CblasNoTrans , CblasNoTrans , 20 ,  24*24 , 25 , 1., k1 ,imgData_col , 0. , conv1_col );
+
+	for ( int i = 0 ; i < 20 * 24 * 24 ; ++ i )
+	{
+		conv1_col[i] += b1[i/(24*24)];
+	}
+
+	pooling( conv1_col , pool1_col , 20 , 24 , 24 );
+
+	float * pool1_2_mat	= new float [ 8 * 8 * 20 * 5 * 5 ];
+	float * k2			= new float [ 50 * 20 * 5 * 5 ];
+	float * b2			= new float [ 50 ];
+	float * conv2_col	= new float [ 50 * 8 * 8 ];
+	float * pool2_col	= new float [ 50 * 4 * 4 ];
+
+	im2col( pool1_col , 20 , 12 , 12 , 5 , 5 , pool1_2_mat );
+
+	for ( int i = 0 ; i < 50 * 20 * 5 * 5 ; ++i )
+		k2[i] = net.layer(3).blobs(0).data(i);
+	for ( int i = 0 ; i < 50 ; i ++ )
+		b2[i] = net.layer(3).blobs(1).data(i);
+
+	wrapper_cblas_gemm<float>( CblasNoTrans , CblasNoTrans , 50, 8*8 , 20*5*5, 1., k2 ,pool1_2_mat, 0. , conv2_col );
+
+	for ( int i =0 ; i < 50 * 8 * 8 ; i ++ )
+		conv2_col[i] += b2[i/(8*8)];
+
+	pooling( conv2_col , pool2_col , 50 , 8 , 8 );
+
+    WeightBlob pooling2( pool2_col , 1 , 50 , 4 , 4 );
+
+//    WeightBlob conv2_result( conv2_col , 1 , 50 , 8 , 8 );
+//	WeightBlob pooling1( pool1_col , 1 , 20 , 12 , 12 );
+
+	delete [] imgData;
+	delete [] k1;
+	delete [] b1;
+	delete [] imgData_col;
+	delete [] conv1_col;
+	delete [] pool1_col;
+	delete [] pool1_2_mat;
+	delete [] k2;
+	delete [] b2;
+	delete [] conv2_col;
+	delete [] pool2_col;
+
+#endif
     //pooling layer 1
-    WeightBlob pooling1( 1 , net.layer(1).blobs(0).shape().dim(0) , 12 , 12 );
-    max_pooling( conv_result , pooling1 );
+//    WeightBlob pooling1( 1 , net.layer(1).blobs(0).shape().dim(0) , 12 , 12 );
+ //   max_pooling( conv_result , pooling1 );
 
     // conv2    
-    WeightBlob kernel2( net.layer(3).blobs(0) );
-    BiasBlob bias2( net.layer(3).blobs(1) );
-    WeightBlob conv2_result( 1 , 50 , 8 , 8 );
-    conv2_gemm( pooling1 , kernel2 , bias2 , conv2_result );
+  //  WeightBlob kernel2( net.layer(3).blobs(0) );
+   // BiasBlob bias2( net.layer(3).blobs(1) );
+    //WeightBlob conv2_result( 1 , 50 , 8 , 8 );
+  //  conv2_gemm( pooling1 , kernel2 , bias2 , conv2_result );
 
     // pooling 2
-    WeightBlob pooling2( 1 , 50 , 4 , 4 );
-    max_pooling( conv2_result , pooling2 );
+//    WeightBlob pooling2( 1 , 50 , 4 , 4 );
+ //   max_pooling( conv2_result , pooling2 );
 
     // transfer the shape
     MatrixBlob from_pooling2( 1 , 800 );
