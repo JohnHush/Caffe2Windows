@@ -7,7 +7,7 @@
 #include <opencv2/opencv.hpp>
 #include <vector>
 #include <algorithm>
-#include <openblas/cblas.h>
+#include <cblas.h>
 
 void matrix_m_matrix( float *a , float *b , int m , int n , int k , float * c );
 

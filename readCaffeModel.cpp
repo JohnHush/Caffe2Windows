@@ -62,11 +62,12 @@ int main( void )
 	IplImage * imgcolor = cvCreateImage( cvSize( 28 , 28 ) , 8  , 1 );
 	MGPRD.getRedPixels( imgcolor );
 
-	cvNamedWindow( "show" , CV_WINDOW_NORMAL );
-	cvShowImage("show", imgcolor );
-	cvWaitKey();
-	//test end
+	//cvNamedWindow( "show" , CV_WINDOW_NORMAL );
+	//cvShowImage("show", imgcolor );
+	//cvWaitKey();
+	////test end
 
+	cout << "start to calculating the score!\n" << endl;
 //	IplImage * imgRst = cvCreateImage( cvSize( 28 , 28 ) , 8 , 1 );
 //	pair<float , float> MODEL_PRIOR = make_pair( 0.5 , 0.5 );
 //	bool st = hasRedPixelsAndPickUp( imgSrc , imgRst , MODEL_PRIOR );
@@ -76,6 +77,11 @@ int main( void )
 
 	for ( int i = 0 ; i < 10 ; i++)
 		cout << "i = " << i << "  score = " << score[i] << endl;
+
+	cout << "end of calculating the score!\n" << endl;
+
+	char s;
+	cin >>s;
 
 #endif
 // test on MNIST test set, the accuracy is 99.18%;
