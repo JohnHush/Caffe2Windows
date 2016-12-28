@@ -16,6 +16,13 @@ void matrix_m_matrix( float *a , float *b , int LEFT , int MIDD , int RIGH , flo
 	}
 }
 
+void relu( float * data ,  const int N )
+{
+	for ( int i = 0 ; i < N ; ++i )
+		if ( data[i] < 0 )
+			data[i] = 0.;
+}
+
 void pooling( float *before , float *after , const int channel , const int width , const int height )
 {
 	int ah = height/2;
@@ -650,16 +657,6 @@ void conv1_gemm( IplImage * imgSrc , WeightBlob & weight , BiasBlob & bias , Wei
 void compute_score( IplImage * imgSrc , ::caffe::NetParameter & net , vector<float> & score )
 {
     score.resize(10);
-    // conve1
-#define DEBUG_
-#ifndef DEBUG_
-
-    WeightBlob kernel1( net.layer(1).blobs(0) );
-    BiasBlob bias1( net.layer(1).blobs(1));
-	WeightBlob conv_result( 1 , net.layer(1).blobs(0).shape().dim(0) , 24 , 24 );
-    conv1_gemm( imgSrc , kernel1 , bias1 , conv_result );
-#else
-//test of conv1...
 
 	float * imgData		= new float [ 28 * 28 ];
 	float * k1			= new float [ 20 * 25 ];
@@ -711,10 +708,25 @@ void compute_score( IplImage * imgSrc , ::caffe::NetParameter & net , vector<flo
 
 	pooling( conv2_col , pool2_col , 50 , 8 , 8 );
 
-    WeightBlob pooling2( pool2_col , 1 , 50 , 4 , 4 );
+	float * inner_w1	= new float [ 500 * 800 ];
+	float * inner_r1	= new float [ 500 ];
+	float * inner_w2	= new float [ 10 * 500 ];
+	float * inner_r2	= new float [ 10 ];
 
-//  WeightBlob conv2_result( conv2_col , 1 , 50 , 8 , 8 );
-//	WeightBlob pooling1( pool1_col , 1 , 20 , 12 , 12 );
+	for ( int i = 0 ; i < 500 * 800 ; i++ )
+		inner_w1[i] = net.layer(5).blobs(0).data(i);
+	for ( int i = 0 ; i < 500 ; i ++ )
+		inner_r1[i] = net.layer(5).blobs(1).data(i);
+
+	wrapper_cblas_gemv<float>( CblasNoTrans , 500 ,800,1.,inner_w1, pool2_col,1.,inner_r1);
+
+	relu( inner_r1 , 500 );
+
+	for ( int i = 0 ; i < 10 * 500 ; i ++ )
+		inner_w2[i] = net.layer(7).blobs(0).data(i);
+	for ( int i = 0 ; i < 10 ; i ++ )
+		inner_r2[i] = net.layer(7).blobs(1).data(i);
+	wrapper_cblas_gemv<float>( CblasNoTrans ,10 ,500,1.,inner_w2, inner_r1,1.,inner_r2 );
 
 	delete [] imgData;
 	delete [] k1;
@@ -727,41 +739,12 @@ void compute_score( IplImage * imgSrc , ::caffe::NetParameter & net , vector<flo
 	delete [] b2;
 	delete [] conv2_col;
 	delete [] pool2_col;
-
-#endif
-    //pooling layer 1
-//    WeightBlob pooling1( 1 , net.layer(1).blobs(0).shape().dim(0) , 12 , 12 );
- //   max_pooling( conv_result , pooling1 );
-
-    // conv2    
-  //  WeightBlob kernel2( net.layer(3).blobs(0) );
-   // BiasBlob bias2( net.layer(3).blobs(1) );
-    //WeightBlob conv2_result( 1 , 50 , 8 , 8 );
-  //  conv2_gemm( pooling1 , kernel2 , bias2 , conv2_result );
-
-    // pooling 2
-//    WeightBlob pooling2( 1 , 50 , 4 , 4 );
- //   max_pooling( conv2_result , pooling2 );
-
-    // transfer the shape
-    MatrixBlob from_pooling2( 1 , 800 );
-    transfer2matrix( pooling2 , from_pooling2 );
-
-    // inner product layer 1
-    MatrixBlob inner1_result( 1 , 500 );
-    MatrixBlob inner_weight1( net.layer(5).blobs(0) );
-    BiasBlob bias3( net.layer(5).blobs(1) );
-    inner_product( from_pooling2 , inner_weight1 , bias3 , inner1_result );
-
-    //relu layer
-    relu( inner1_result );
-
-    // innner product layer2
-    MatrixBlob inner2_result( 1 , 10 );
-    MatrixBlob inner_weight2( net.layer(7).blobs(0) );
-    BiasBlob bias4( net.layer(7).blobs(1) );
-    inner_product( inner1_result , inner_weight2 , bias4 , inner2_result );
+	delete [] inner_w1;
+	delete [] inner_r1;
+	delete [] inner_w2;
 
     for ( int i = 0 ; i < 10 ; i++ )
-        score[i] = inner2_result.getValue( 0 , i );
+		score[i] = inner_r2[i];
+	delete [] inner_r2;
+
 }

@@ -87,6 +87,7 @@ class MatrixBlob
 		MatrixBlob & operator = ( const MatrixBlob & );
 	public:
 		explicit MatrixBlob( const int N , const int C );
+		explicit MatrixBlob( const float *, const int N , const int C );
 		explicit MatrixBlob( const ::caffe::BlobProto & blob );
 		MatrixBlob():data_(NULL) , count_(0){};
 		~MatrixBlob();

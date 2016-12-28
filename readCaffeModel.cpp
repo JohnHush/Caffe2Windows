@@ -62,9 +62,9 @@ int main( void )
 	IplImage * imgcolor = cvCreateImage( cvSize( 28 , 28 ) , 8  , 1 );
 	MGPRD.getRedPixels( imgcolor );
 
-//	cvNamedWindow( "show" , CV_WINDOW_NORMAL );
-//	cvShowImage("show", imgcolor );
-//	cvWaitKey();
+	cvNamedWindow( "show" , CV_WINDOW_NORMAL );
+	cvShowImage("show", imgcolor );
+	cvWaitKey();
 	//test end
 
 //	IplImage * imgRst = cvCreateImage( cvSize( 28 , 28 ) , 8 , 1 );

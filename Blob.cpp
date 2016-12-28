@@ -156,6 +156,27 @@ MatrixBlob::MatrixBlob( const int N , const int C )
 		data_[i] = new float [C];
 }
 
+MatrixBlob::MatrixBlob( const float * data_in , const int N , const int C )
+{
+	shape_.clear();
+	shape_.resize(2);
+
+	shape_[0] = N;
+	shape_[1] = C;
+
+	count_ = N * C;
+
+	data_ = new float *[N];
+
+	for( int i = 0 ; i < N ; ++ i )
+		data_[i] = new float [C];
+
+	for ( int iNUM = 0 ; iNUM < shape_[0] ; ++ iNUM )
+	for ( int iCHA = 0 ; iCHA < shape_[1] ; ++ iCHA )
+		data_[iNUM][iCHA] = data_in[ iNUM * shape_[1] + iCHA ];
+	
+}
+
 MatrixBlob::~MatrixBlob()
 {
 	for ( int i = 0 ; i < shape_[0] ; ++ i )

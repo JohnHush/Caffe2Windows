@@ -7,7 +7,7 @@
 #include <opencv2/opencv.hpp>
 #include <vector>
 #include <algorithm>
-#include <cblas.h>
+#include <openblas/cblas.h>
 
 void matrix_m_matrix( float *a , float *b , int m , int n , int k , float * c );
 
@@ -20,6 +20,7 @@ typedef struct MAT2D
 
 }MAT2D;
 
+void relu( float * data , const int N );
 void pooling( float *before , float *after , const int channel , const int width , const int height );
 
 template <typename Dtype>
