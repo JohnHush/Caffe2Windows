@@ -709,24 +709,31 @@ void compute_score( IplImage * imgSrc , ::caffe::NetParameter & net , vector<flo
 	pooling( conv2_col , pool2_col , 50 , 8 , 8 );
 
 	float * inner_w1	= new float [ 500 * 800 ];
+	float * inner_b1	= new float [ 500 ];
 	float * inner_r1	= new float [ 500 ];
 	float * inner_w2	= new float [ 10 * 500 ];
+	float * inner_b2	= new float [ 10 ];
 	float * inner_r2	= new float [ 10 ];
 
 	for ( int i = 0 ; i < 500 * 800 ; i++ )
 		inner_w1[i] = net.layer(5).blobs(0).data(i);
 	for ( int i = 0 ; i < 500 ; i ++ )
-		inner_r1[i] = net.layer(5).blobs(1).data(i);
+		inner_b1[i] = net.layer(5).blobs(1).data(i);
 
-	wrapper_cblas_gemv<float>( CblasNoTrans , 500 ,800,1.,inner_w1, pool2_col,1.,inner_r1);
+	wrapper_cblas_gemv<float>( CblasNoTrans , 500 ,800,1.,inner_w1, pool2_col,0,inner_r1);
+
+	for ( int i = 0 ; i < 500 ; i ++ )
+		inner_r1[i] += inner_b1[i];
 
 	relu( inner_r1 , 500 );
 
 	for ( int i = 0 ; i < 10 * 500 ; i ++ )
 		inner_w2[i] = net.layer(7).blobs(0).data(i);
 	for ( int i = 0 ; i < 10 ; i ++ )
-		inner_r2[i] = net.layer(7).blobs(1).data(i);
-	wrapper_cblas_gemv<float>( CblasNoTrans ,10 ,500,1.,inner_w2, inner_r1,1.,inner_r2 );
+		inner_b2[i] = net.layer(7).blobs(1).data(i);
+	wrapper_cblas_gemv<float>( CblasNoTrans ,10 ,500,1.,inner_w2, inner_r1,0,inner_r2 );
+	for ( int i = 0 ; i < 10 ; i ++ )
+		inner_r2[i] += inner_b2[i];
 
 	delete [] imgData;
 	delete [] k1;
