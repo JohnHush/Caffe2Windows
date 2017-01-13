@@ -22,7 +22,7 @@ void MixedGaussianRPD::deNoise( IplImage * imgRst )
         {
             int CBlu = ptr[ 3 * icol + 0 ];
             int CGre = ptr[ 3 * icol + 1 ];
-            int CRed = ptr[ 3 * icol + 2 ];                                                                             
+            int CRed = ptr[ 3 * icol + 2 ];
 
             if ( 0 == CBlu && 0 == CGre && 0 == CRed )
                 continue;

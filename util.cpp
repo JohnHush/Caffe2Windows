@@ -5,6 +5,24 @@
 using std::cout;
 using std::endl;
 
+void showImage( const IplImage * imgSrc , const float ratio , const string & windowName , const int waitingTime )
+{
+	int width = int(imgSrc->width  * ratio);
+	int heigh = int(imgSrc->height * ratio);
+
+	IplImage * imgRst = cvCreateImage( cvSize( width , heigh ) , imgSrc->depth , imgSrc->nChannels );
+	cvResize( imgSrc , imgRst );
+
+	cvNamedWindow( windowName.c_str() );
+	cvShowImage( windowName.c_str() , imgRst );
+	if ( waitingTime == 0 )
+		cvWaitKey();
+	else
+		cvWaitKey( waitingTime );
+
+	cvReleaseImage( &imgRst );
+}
+
 void matrix_m_matrix( float *a , float *b , int LEFT , int MIDD , int RIGH , float * c )
 {
 	for ( int i = 0 ; i < LEFT ; i++ )

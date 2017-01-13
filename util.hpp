@@ -7,9 +7,11 @@
 #include <opencv2/opencv.hpp>
 #include <vector>
 #include <algorithm>
-#include <cblas.h>
+#include <openblas/cblas.h>
+#include <string>
 
 void matrix_m_matrix( float *a , float *b , int m , int n , int k , float * c );
+void showImage( const IplImage * imgSrc , const float ratio , const string & windowName , const int waitingTime = 0 );
 
 typedef struct MAT2D
 {

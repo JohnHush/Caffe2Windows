@@ -23,6 +23,7 @@ using google::protobuf::Message;
 #include "RedPixelsExtractor.hpp"
 #include "util.hpp"
 #include "Binarizator/adaptive_threshold.hpp"
+#include "tools_classifier.hpp"
 
 int main( void )
 {
@@ -33,20 +34,19 @@ int main( void )
 	fstream input( filename , ios::in | ios::binary);	
 	net.ParseFromIstream( &input );
 #ifndef DEBUG
-	IplImage * imgSrc = cvLoadImage( "./test_data/color_8.jpg" , CV_LOAD_IMAGE_COLOR );
-//	LineBoxDetector tst( imgSrc , 100 );
-//	tst.detectBox();
-//	tst.showOnImage();
+	IplImage * imgSrc1 = cvLoadImage( "./test_data/TEST_SET/g-0-2.jpg" , CV_LOAD_IMAGE_COLOR );
+	IplImage * imgSrc2 = cvLoadImage( "./test_data/TEST_SET/g-2-1.jpg" , CV_LOAD_IMAGE_COLOR );
+	IplImage * imgSrc3 = cvLoadImage( "./test_data/TEST_SET/g-illegal-1.jpg" , CV_LOAD_IMAGE_COLOR );
+	IplImage * imgSrc4 = cvLoadImage( "./test_data/TEST_SET/y-6-3-1.jpg" , CV_LOAD_IMAGE_COLOR );
+	IplImage * imgSrc5 = cvLoadImage( "./test_data/TEST_SET/y-6-3-1.jpg" , CV_LOAD_IMAGE_COLOR );
 
-//	return 1;
+	IplImage * imgSrc = cvLoadImage( "./test_data/TEST_SET/y-4-3.jpg" , CV_LOAD_IMAGE_COLOR );
 
 	IplImage * imgThreshold = cvCreateImage( cvGetSize( imgSrc ) , 8 , 1 );
 
 	AdaThre adapt_thresholder( 201 , 20 );
 	adapt_thresholder.binarizate( imgSrc , imgThreshold );
-//	cvNamedWindow( "show" , CV_WINDOW_AUTOSIZE );
-//	cvShowImage("show", imgThreshold);
-//	cvWaitKey();
+//	return 1;
 
 	for ( int irow = 0 ; irow < imgSrc->height ; ++ irow )
 	for ( int icol = 0 ; icol < imgSrc->width  ; ++ icol )
@@ -57,20 +57,34 @@ int main( void )
 
 	MixedGaussianRPD MGPRD( imgSrc );
 
-
 	MGPRD.hasRedPixels();
 	IplImage * imgcolor = cvCreateImage( cvSize( 28 , 28 ) , 8  , 1 );
 	MGPRD.getRedPixels( imgcolor );
+/*
+	vector<IplImage *> imgs(5);
+	imgs[0] = imgSrc1;
+	imgs[1] = imgSrc2;
+	imgs[2] = imgSrc3;
+	imgs[3] = imgSrc4;
+	imgs[4] = imgSrc5;
 
-	//cvNamedWindow( "show" , CV_WINDOW_NORMAL );
-	//cvShowImage("show", imgcolor );
-	//cvWaitKey();
-	////test end
+	jh::mg_classifier mgc;
 
+	jh::train_classifier( imgs , adapt_thresholder , 100 , mgc );
+
+	cvNamedWindow( "show" , CV_WINDOW_AUTOSIZE );
+	cvShowImage("show", imgSrc );
+	cvWaitKey(500);
+	bool flag = jh::getRedPixels( imgSrc , adapt_thresholder , mgc , 100 , 0.01 , imgcolor);
+
+	if ( flag == false )
+	{
+		cout << "the image is blank " << endl;
+		return 1;
+	}
+
+*/
 	cout << "start to calculating the score!\n" << endl;
-//	IplImage * imgRst = cvCreateImage( cvSize( 28 , 28 ) , 8 , 1 );
-//	pair<float , float> MODEL_PRIOR = make_pair( 0.5 , 0.5 );
-//	bool st = hasRedPixelsAndPickUp( imgSrc , imgRst , MODEL_PRIOR );
 
 	vector<float> score;
 	compute_score( imgcolor , net , score );
@@ -82,7 +96,6 @@ int main( void )
 
 	char s;
 	cin >>s;
-
 #endif
 // test on MNIST test set, the accuracy is 99.18%;
 #ifdef DEBUG
