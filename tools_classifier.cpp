@@ -6,7 +6,7 @@
 namespace jh
 {
 	void train_classifier( const vector<IplImage *> imgs , Binarizator & BINTOR , const float & epsilon 
-			, mg_classifier & mgc )
+			, int iteration , mg_classifier & mgc )
 	{
 		vector< pair<float , float> > features;
 
@@ -36,38 +36,38 @@ namespace jh
 		}
 		// get all the feature pts in imgs
 
-		pair<float , float> miu;
-		MAT2D cov, cov_inv;
-		/*
-		 * calculate the original expectation and covariance, then 
-		 * filter out all the points beyond 99.7% range 
-		 * because when we're calculating LIKELIHOOD function, too small probability value
-		 * will cause extremly large value
-		 */
+		//pair<float , float> miu;
+		//MAT2D cov, cov_inv;
+		///*
+		// * calculate the original expectation and covariance, then 
+		// * filter out all the points beyond 99.7% range 
+		// * because when we're calculating LIKELIHOOD function, too small probability value
+		// * will cause extremly large value
+		// */
 
-		feature_exp( features , miu );
-		feature_cov( features , cov );
-		matrix_inversion_2d( cov , cov_inv );
+		//feature_exp( features , miu );
+		//feature_cov( features , cov );
+		//matrix_inversion_2d( cov , cov_inv );
 
-		int SIZE = features.size();
+		//int SIZE = features.size();
 
-		for ( int iDATA = 0 ; iDATA < SIZE ; ++ iDATA )
-		{
-			float A = features[iDATA].first - miu.first;
-			float B = features[iDATA].second- miu.second;
+		//for ( int iDATA = 0 ; iDATA < SIZE ; ++ iDATA )
+		//{
+		//	float A = features[iDATA].first - miu.first;
+		//	float B = features[iDATA].second- miu.second;
 
-			if ( cov_inv.a00 * A * A + 2* cov_inv.a10 *A *B + cov_inv.a11 * B *B < 9. )
-				features.push_back( features[iDATA] );
-			/*
-			 * if sqrt ( (x - u )T * sigma_inv * (x-u) ) < 3
-			 * then it's filtered out
-			 */
-		}
-		features.erase( features.begin() , features.begin() + SIZE );
-		// we get the filtered feature pts in img_
+		//	if ( cov_inv.a00 * A * A + 2* cov_inv.a10 *A *B + cov_inv.a11 * B *B < 9. )
+		//		features.push_back( features[iDATA] );
+		//	/*
+		//	 * if sqrt ( (x - u )T * sigma_inv * (x-u) ) < 3
+		//	 * then it's filtered out
+		//	 */
+		//}
+		//features.erase( features.begin() , features.begin() + SIZE );
+		//// we get the filtered feature pts in img_
 
 		mgc.initExtractor( features );
-		mgc.EMAlgorithm( 10 );
+		mgc.EMAlgorithm( iteration );
 		/*
 		 * train a RedPixelsExtractor to classify the data points
 		 */
@@ -76,7 +76,7 @@ namespace jh
 	}
 
 	bool getRedPixels( IplImage * imgSrc , Binarizator & BINTOR , classifier & clf , float epsilon ,
-			float prc , IplImage * imgRst )
+			float prc , float prc_inside_point,  IplImage * imgRst )
 	{
 		IplImage * img_ = cvCloneImage( imgSrc );
 		IplImage * imgThreshold = cvCreateImage( cvGetSize( imgSrc ) , 8 , 1 );
@@ -235,7 +235,7 @@ namespace jh
 		double adding_area = contour_feature[0].second;
 		int index = 1;
 
-		while( adding_area < 0.95 * whole_area )
+		while( adding_area < prc_inside_point * whole_area )
 		{
 			adding_area += contour_feature[index].second;
 

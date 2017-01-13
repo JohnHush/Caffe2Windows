@@ -12,10 +12,10 @@ using std::vector;
 namespace jh
 {
 	void train_classifier( const vector<IplImage *> imgs , Binarizator & BINTOR , const float & epsilon 
-			, mg_classifier & mgc );
+			, int iteration , mg_classifier & mgc );
 
 	bool getRedPixels( IplImage * imgSrc , Binarizator & BINTOR , classifier & clf , float epsilon , 
-			            float prc , IplImage * imgRst );
+			            float prc , float prc_inside_point , IplImage * imgRst );
 }// namespace jh
 
 #endif
