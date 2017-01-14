@@ -24,6 +24,7 @@ using google::protobuf::Message;
 #include "util.hpp"
 #include "Binarizator/adaptive_threshold.hpp"
 #include "tools_classifier.hpp"
+#include "HandWritingDigitsRecognitionSystem.h"
 
 int main( void )
 {
@@ -34,48 +35,62 @@ int main( void )
 	fstream input( filename , ios::in | ios::binary);	
 	net.ParseFromIstream( &input );
 #ifndef DEBUG
-	IplImage * imgSrc1 = cvLoadImage( "./test_data/TEST_SET/g-0-2.jpg" , CV_LOAD_IMAGE_COLOR );
-	IplImage * imgSrc2 = cvLoadImage( "./test_data/TEST_SET/g-2-1.jpg" , CV_LOAD_IMAGE_COLOR );
-	IplImage * imgSrc3 = cvLoadImage( "./test_data/TEST_SET/g-illegal-1.jpg" , CV_LOAD_IMAGE_COLOR );
-	IplImage * imgSrc4 = cvLoadImage( "./test_data/TEST_SET/y-6-3-1.jpg" , CV_LOAD_IMAGE_COLOR );
-	IplImage * imgSrc5 = cvLoadImage( "./test_data/TEST_SET/y-6-3-1.jpg" , CV_LOAD_IMAGE_COLOR );
+	IplImage * imgSrc1 = cvLoadImage( "D://MyProjects/orion-eye/test_data/TEST_SET/y-4-3.jpg" , CV_LOAD_IMAGE_COLOR );
+	IplImage * imgSrc2 = cvLoadImage( "D://MyProjects/orion-eye/test_data/TEST_SET/g-2-1.jpg" , CV_LOAD_IMAGE_COLOR );
+	IplImage * imgSrc3 = cvLoadImage( "D://MyProjects/orion-eye/test_data/TEST_SET/g-illegal-1.jpg" , CV_LOAD_IMAGE_COLOR );
+	IplImage * imgSrc4 = cvLoadImage( "D://MyProjects/orion-eye/test_data/TEST_SET/y-6-3-1.jpg" , CV_LOAD_IMAGE_COLOR );
+	IplImage * imgSrc5 = cvLoadImage( "D://MyProjects/orion-eye/test_data/TEST_SET/y-6-3-1.jpg" , CV_LOAD_IMAGE_COLOR );
 
-	IplImage * imgSrc = cvLoadImage( "./test_data/TEST_SET/y-4-3.jpg" , CV_LOAD_IMAGE_COLOR );
+	IplImage * imgSrc = cvLoadImage( "D://MyProjects/orion-eye/test_data/TEST_SET/y-6-2-1.jpg" , CV_LOAD_IMAGE_COLOR );
 
-	IplImage * imgThreshold = cvCreateImage( cvGetSize( imgSrc ) , 8 , 1 );
+
+	initPredictor();
+	int index = looksLikeNumber( imgSrc );
+	cout << "index = " << index << endl;
+	deletePredictor( );
+
+	char ss;
+	cin >>ss;
+	return 1;
+
+
+
+	if ( imgSrc == nullptr )
+		return 1;
+//	IplImage * imgThreshold = cvCreateImage( cvGetSize( imgSrc ) , 8 , 1 );
 
 	AdaThre adapt_thresholder( 201 , 20 );
-	adapt_thresholder.binarizate( imgSrc , imgThreshold );
+//	adapt_thresholder.binarizate( imgSrc , imgThreshold );
 //	return 1;
 
-	for ( int irow = 0 ; irow < imgSrc->height ; ++ irow )
-	for ( int icol = 0 ; icol < imgSrc->width  ; ++ icol )
-	{
-		if ( cvGetReal2D( imgThreshold , irow , icol ) == 255 )
-			cvSet2D( imgSrc , irow , icol , cvScalar(0,0,0) );
-	}
+//	for ( int irow = 0 ; irow < imgSrc->height ; ++ irow )
+//	for ( int icol = 0 ; icol < imgSrc->width  ; ++ icol )
+//	{
+//		if ( cvGetReal2D( imgThreshold , irow , icol ) == 255 )
+//			cvSet2D( imgSrc , irow , icol , cvScalar(0,0,0) );
+//	}
 
-	MixedGaussianRPD MGPRD( imgSrc );
+//	MixedGaussianRPD MGPRD( imgSrc );
 
-	MGPRD.hasRedPixels();
+//	MGPRD.hasRedPixels();
 	IplImage * imgcolor = cvCreateImage( cvSize( 28 , 28 ) , 8  , 1 );
-	MGPRD.getRedPixels( imgcolor );
-/*
-	vector<IplImage *> imgs(5);
+//	MGPRD.getRedPixels( imgcolor );
+
+	vector<IplImage *> imgs(1);
 	imgs[0] = imgSrc1;
-	imgs[1] = imgSrc2;
-	imgs[2] = imgSrc3;
-	imgs[3] = imgSrc4;
-	imgs[4] = imgSrc5;
+	//imgs[1] = imgSrc2;
+	//imgs[2] = imgSrc3;
+	//imgs[3] = imgSrc4;
+	//imgs[4] = imgSrc5;
 
 	jh::mg_classifier mgc;
 
-	jh::train_classifier( imgs , adapt_thresholder , 100 , mgc );
+	jh::train_classifier( imgs , adapt_thresholder , 20 , 200 ,  mgc );
 
-	cvNamedWindow( "show" , CV_WINDOW_AUTOSIZE );
+	/*cvNamedWindow( "show" , CV_WINDOW_AUTOSIZE );
 	cvShowImage("show", imgSrc );
-	cvWaitKey(500);
-	bool flag = jh::getRedPixels( imgSrc , adapt_thresholder , mgc , 100 , 0.01 , imgcolor);
+	cvWaitKey(500);*/
+	bool flag = jh::getRedPixels( imgSrc , adapt_thresholder , mgc , 20 , 0.01 , 0.8, imgcolor);
 
 	if ( flag == false )
 	{
@@ -83,7 +98,7 @@ int main( void )
 		return 1;
 	}
 
-*/
+
 	cout << "start to calculating the score!\n" << endl;
 
 	vector<float> score;

@@ -82,9 +82,9 @@ namespace jh
 		IplImage * imgThreshold = cvCreateImage( cvGetSize( imgSrc ) , 8 , 1 );
 		BINTOR.binarizate( imgSrc , imgThreshold );
 
-		cvNamedWindow( "showT" , CV_WINDOW_AUTOSIZE );
-		cvShowImage("showT", imgThreshold );
-		cvWaitKey(500);
+		//cvNamedWindow( "showT" , CV_WINDOW_AUTOSIZE );
+		//cvShowImage("showT", imgThreshold );
+		//cvWaitKey(500);
 
 		for ( int irow = 0 ; irow < imgSrc->height ; ++ irow )
 		for ( int icol = 0 ; icol < imgSrc->width  ; ++ icol )
@@ -135,7 +135,7 @@ namespace jh
 				}
 			}
 		}
-		showImage( imgColorPixels , 1 , "rst" , 500 );
+		//showImage( imgColorPixels , 1 , "rst" , 500 );
 
 		if ( float(pt_count) / tpt_count < prc )
 			return false;
@@ -336,7 +336,7 @@ namespace jh
 		 * but right now we gonna live with it
 		 */
 
-		showImage( imgRst , 10 , "rst" , 500 );
+	//	showImage( imgRst , 10 , "rst" , 500 );
 
 		cvReleaseImage( &img_ );
 		cvReleaseImage( &imgThreshold );
