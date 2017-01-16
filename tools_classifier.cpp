@@ -2,6 +2,7 @@
 #include <utility>
 #include <cmath>
 #include "util.hpp"
+#include "windows.h"
 
 namespace jh
 {
@@ -82,18 +83,25 @@ namespace jh
 		IplImage * imgThreshold = cvCreateImage( cvGetSize( imgSrc ) , 8 , 1 );
 		BINTOR.binarizate( imgSrc , imgThreshold );
 
-		//cvNamedWindow( "showT" , CV_WINDOW_AUTOSIZE );
-		//cvShowImage("showT", imgThreshold );
-		//cvWaitKey(500);
+		// set pixels around the edges of img4Contour as 0!
+		for ( int irow = 0 ; irow < imgThreshold->height ; ++ irow )
+		for ( int icol = 0 ; icol < imgThreshold->width ; ++ icol )
+		{
+			if ( irow <5 || icol < 5 || irow > imgThreshold->height -5 || icol > imgThreshold->width -5 )
+				cvSetReal2D( imgThreshold , irow , icol , 255 );
+		}
 
+	//	showImage( imgThreshold , 1 , "threshold"  );
 		for ( int irow = 0 ; irow < imgSrc->height ; ++ irow )
 		for ( int icol = 0 ; icol < imgSrc->width  ; ++ icol )
 		{
 			if ( cvGetReal2D( imgThreshold , irow , icol ) == 255 )
 				cvSet2D( img_ , irow , icol , cvScalar(0,0,0) );
 		}
-		//
+	//	showImage( img_ , 1 , "img"  );
+
 		IplImage * imgColorPixels = cvCreateImage( cvGetSize( img_ ) , 8 , 1 );
+		
 		cvSetZero( imgColorPixels );
 		// the image stores the red pixels , but in gray scale, 
 		// after that , we resize the image and get 28 *28 image
@@ -135,6 +143,7 @@ namespace jh
 				}
 			}
 		}
+
 		//showImage( imgColorPixels , 1 , "rst" , 500 );
 
 		if ( float(pt_count) / tpt_count < prc )
@@ -154,6 +163,7 @@ namespace jh
 				}
 			}
 		}
+
 		for ( int irow = 0 ; irow < imgColorPixels->height ; ++ irow )
 		{
 			unsigned char * ptr = (unsigned char *) ( imgColorPixels->imageData + irow * imgColorPixels->widthStep );
@@ -168,6 +178,7 @@ namespace jh
 		}
 		xStd = sqrt( xStd );
 		yStd = sqrt( yStd );
+
 		/*
 		 * compute the heart of the color pixels
 		 * used to filter contours,
@@ -186,6 +197,7 @@ namespace jh
 
 		vector< pair<CvRect , double > > contour_feature;
 
+//		MessageBoxA(NULL,"66","66",MB_OK|MB_SYSTEMMODAL);
 		if ( contourGetter->rect.width == img4Contour->width - 2 && 
 				contourGetter->rect.height == img4Contour->height - 2 )
 			contourGetter = ( CvContour * )contourGetter->v_next;
@@ -194,7 +206,7 @@ namespace jh
 		 * that means we get an outter contour contains the whole image
 		 * then we need to delete it first, and see the v_next point
 		 */
-
+//		MessageBoxA(NULL,"77","77",MB_OK|MB_SYSTEMMODAL);
 		do
 		{
 			double area = fabs (cvContourArea( contourGetter ) );
@@ -253,6 +265,7 @@ namespace jh
 
 			index ++;
 		}
+
 		int box_width = box_ri - box_le;
 		int box_heigh = box_do - box_up;
 
@@ -308,7 +321,6 @@ namespace jh
 		 * to move the center of the mass to the center
 		 * of the image of 28 * 28 size
 		 */
-
 		cvSetZero( imgRst );
 
 		for ( int irow = 0 ; irow < 28 ; ++ irow )
@@ -336,7 +348,7 @@ namespace jh
 		 * but right now we gonna live with it
 		 */
 
-	//	showImage( imgRst , 10 , "rst" , 500 );
+//		showImage( imgRst , 10 , "rst" );
 
 		cvReleaseImage( &img_ );
 		cvReleaseImage( &imgThreshold );
