@@ -2,7 +2,8 @@
 #include <utility>
 #include <cmath>
 #include "util.hpp"
-#include "windows.h"
+
+using std::make_pair;
 
 namespace jh
 {
