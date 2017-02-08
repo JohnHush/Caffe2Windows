@@ -315,6 +315,19 @@ void compute_score( IplImage * imgSrc , ::caffe::NetParameter & net , vector<flo
 
     for ( int i = 0 ; i < 10 ; i++ )
 		score[i] = inner_r2[i];
+
+	// add softmax loss layer
+	
+	int max_index = findMax( score );
+	for ( int i = 0 ; i < 10 ; i ++ )
+		inner_r2[i] = score[i] - score[max_index];
+
+	float sum_exp = 0.;
+	for ( int i = 0 ; i < 10 ; i ++ )
+		sum_exp += std::exp( inner_r2[i] );
+
+	for ( int i = 0 ; i < 10 ; i ++ )
+		score[i] = std::exp( inner_r2[i] ) / sum_exp;
 	delete [] inner_r2;
 
 }
