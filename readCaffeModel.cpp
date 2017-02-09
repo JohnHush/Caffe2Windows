@@ -34,7 +34,7 @@ int main( void )
 	IplImage * imgSrc2 = cvLoadImage( "./test_data/TEST_SET/g-2-1.jpg" , CV_LOAD_IMAGE_COLOR );
 	IplImage * imgSrc3 = cvLoadImage( "./test_data/TEST_SET/y-6-3-1.jpg" , CV_LOAD_IMAGE_COLOR );
 
-	IplImage * imgSrc = cvLoadImage( "./test_data/TEST_SET/y-6-6.jpg" , CV_LOAD_IMAGE_COLOR );
+	IplImage * imgSrc = cvLoadImage( "./test_data/TEST_SET/q-4-3-1.jpg" , CV_LOAD_IMAGE_COLOR );
 
 	if ( imgSrc == NULL )
 		return 1;
