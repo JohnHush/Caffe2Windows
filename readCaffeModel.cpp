@@ -30,34 +30,38 @@ int main( void )
 	fstream input( filename , ios::in | ios::binary);	
 	net.ParseFromIstream( &input );
 
-	IplImage * imgSrc1 = cvLoadImage( "./test_data/TEST_SET/y-4-3.jpg" , CV_LOAD_IMAGE_COLOR );
-	IplImage * imgSrc2 = cvLoadImage( "./test_data/TEST_SET/g-2-1.jpg" , CV_LOAD_IMAGE_COLOR );
-	IplImage * imgSrc3 = cvLoadImage( "./test_data/TEST_SET/y-6-3-1.jpg" , CV_LOAD_IMAGE_COLOR );
-
-	IplImage * imgSrc = cvLoadImage( "./test_data/TEST_SET/q-4-3-1.jpg" , CV_LOAD_IMAGE_COLOR );
-
-	if ( imgSrc == NULL )
-		return 1;
-
 	AdaThre adapt_thresholder( 201 , 20 );
+
+	IplImage * imgtst = cvLoadImage( "/home/pitaloveu/Desktop/2.png" , CV_LOAD_IMAGE_COLOR );
+	bool hasma = jh::hasPixelsInBox( imgtst , adapt_thresholder , 20 , 0.01 );
+
+//	IplImage * imgSrc1 = cvLoadImage( "./test_data/TEST_SET/y-4-3.jpg" , CV_LOAD_IMAGE_COLOR );
+//	IplImage * imgSrc2 = cvLoadImage( "./test_data/TEST_SET/g-2-1.jpg" , CV_LOAD_IMAGE_COLOR );
+//	IplImage * imgSrc3 = cvLoadImage( "./test_data/TEST_SET/y-6-3-1.jpg" , CV_LOAD_IMAGE_COLOR );
+
+//	IplImage * imgSrc = cvLoadImage( "./test_data/TEST_SET/q-4-3-1.jpg" , CV_LOAD_IMAGE_COLOR );
+
+//	if ( imgSrc == NULL )
+//		return 1;
+
+	if ( !hasma )
+		return -1;
 
 	IplImage * imgcolor = cvCreateImage( cvSize( 28 , 28 ) , 8  , 1 );
 
-	vector<IplImage *> imgs(3);
-	imgs[0] = imgSrc1;
-	imgs[1] = imgSrc2;
-	imgs[2] = imgSrc3;
+	vector<IplImage *> imgs(1);
+	imgs[0] = imgtst;
 
 	jh::mg_classifier mgc;
 
 	jh::train_classifier( imgs , adapt_thresholder , 20 , 200 ,  mgc );
 
-	bool flag = jh::getRedPixels( imgSrc , adapt_thresholder , mgc , 20 , 0.01 , 0.8, imgcolor);
+	bool flag = jh::getRedPixels( imgtst , adapt_thresholder , mgc , 20 , 0.01 , 0.8, imgcolor);
 
 	if ( flag == false )
 	{
 		cout << "the image is blank " << endl;
-		return 1;
+		return -1;
 	}
 
 	cout << "start to calculating the score!\n" << endl;

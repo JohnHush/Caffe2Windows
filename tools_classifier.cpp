@@ -1,12 +1,44 @@
 #include "tools_classifier.hpp"
+#include "Boxdetector/line_box_detector.hpp"
 #include <utility>
 #include <cmath>
 #include "util.hpp"
+#include <opencv2/opencv.hpp>
 
 using std::make_pair;
 
 namespace jh
 {
+	bool hasPixelsInBox( IplImage * imgSrc , Binarizator & BINTOR , int range , float perc )
+	{
+		IplImage * img_thres = cvCreateImage( cvGetSize( imgSrc ) , 8 , 1 );
+		BINTOR.binarizate( imgSrc , img_thres );
+
+		LineBoxDetector lbd( imgSrc , range );
+		lbd.detectBox();
+		CvRect box = lbd.getBoxRegion();
+
+		int num_white = 0;
+		int num_color = 0;
+
+		for ( int irow = 0  ; irow < img_thres->height; ++irow )
+		for ( int icol = 0  ; icol < img_thres->width ; ++icol )
+		{
+			if ( irow < box.y + 10 || irow > box.y + box.height - 10 || 
+					icol < box.x + 10 || icol > box.x + box.width - 10 )
+				continue;
+			if ( cvGetReal2D( img_thres , irow , icol ) == 255 )
+				num_white ++;
+			else
+				num_color ++;
+		}
+		cvReleaseImage( &img_thres );
+
+		if ( float(num_color) / num_white > perc )
+			return true;
+		return false;
+	}
+
 	void train_classifier( const vector<IplImage *> imgs , Binarizator & BINTOR , const float & epsilon 
 			, int iteration , mg_classifier & mgc )
 	{

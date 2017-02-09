@@ -134,7 +134,7 @@ void matrix_inversion_2d( MAT2D & a , MAT2D & inverse )
      */
     if ( fabs( a.a00 * a.a11 - a.a10 * a.a01 ) < 1E-10 )
     {
-        std::cout << "the determinant of the matrix equals to zero!\n" << std::endl;
+//        std::cout << "the determinant of the matrix equals to zero!\n" << std::endl;
         return;
     }
     float inv_det = 1./( a.a00 * a.a11 - a.a10 * a.a01 );

@@ -11,6 +11,7 @@ using std::vector;
 
 namespace jh
 {
+	bool hasPixelsInBox( IplImage * imgSrc , Binarizator & BINTOR , int range , float perc );
 	void train_classifier( const vector<IplImage *> imgs , Binarizator & BINTOR , const float & epsilon 
 			, int iteration , mg_classifier & mgc );
 
