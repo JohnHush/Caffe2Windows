@@ -5,7 +5,7 @@
 #include <opencv2/opencv.hpp>
 #include <vector>
 #include <algorithm>
-#include <openblas/cblas.h>
+#include <cblas.h>
 #include <string>
 
 using std::string;
