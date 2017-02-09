@@ -69,6 +69,8 @@ int main( void )
 		cout << "i = " << i << "  score = " << score[i] << endl;
 
 	cout << "end of calculating the score!\n" << endl;
+	char s;
+	cin >>s;
 
 	return 0;
 }

@@ -8,15 +8,12 @@
 #include <string>
 #include <vector>
 #include <fstream>
-#include "RedPixelDetector/mixed_gaussian_rpd.hpp"
 #include <time.h>
 #include <windows.h>
 
 using namespace std;
 
 #include <fcntl.h>
-#include "Blob.hpp"
-#include "RedPixelsExtractor.hpp"
 #include "util.hpp"
 #include "Binarizator/adaptive_threshold.hpp"
 #include "Classifier/Mixed_Gaussian_Classifier.hpp"
