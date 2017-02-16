@@ -1,73 +1,47 @@
 #include "caffe.pb.h"
 #include <opencv2/opencv.hpp>
-#include <google/protobuf/io/coded_stream.h>
-#include <google/protobuf/io/zero_copy_stream_impl.h>
 #include <iostream>
 #include <string>
 #include <vector>
 #include <fstream>
 #include "Boxdetector/line_box_detector.hpp"
+#include "caffe/caffe.hpp"
 
 using namespace std;
-using google::protobuf::io::FileInputStream;
-using google::protobuf::io::FileOutputStream;
-using google::protobuf::io::ZeroCopyInputStream;
-using google::protobuf::io::ZeroCopyOutputStream;
-using google::protobuf::io::CodedInputStream;
-using google::protobuf::io::CodedOutputStream;
-using google::protobuf::Message;
+using namespace caffe;
 
 #include <fcntl.h>
 #include "util.hpp"
 #include "Binarizator/adaptive_threshold.hpp"
 #include "tools_classifier.hpp"
-//#include "HandWritingDigitsRecognitionSystem.h"
 
-int main( void )
+int main( int argc , char ** argv )
 {
-	const char * filename = "lenet_iter_10000.caffemodel";
+	string name ( argv[1] );
+	string file_name;
+	file_name = "/home/pitaloveu/Desktop/" + name + ".png";
+	IplImage * imgtst = cvLoadImage( file_name.c_str() , CV_LOAD_IMAGE_COLOR );
+
+	const char * filename = "lenet_iter_200.caffemodel";
 	caffe::NetParameter net;
 	fstream input( filename , ios::in | ios::binary);	
 	net.ParseFromIstream( &input );
 
 	AdaThre adapt_thresholder( 201 , 20 );
 
-	IplImage * imgtst = cvLoadImage( "/home/pitaloveu/Desktop/2.png" , CV_LOAD_IMAGE_COLOR );
-	bool hasma = jh::hasPixelsInBox( imgtst , adapt_thresholder , 20 , 0.01 );
+	IplImage * imgred = cvCreateImage( cvSize(28,28) , 8 , 1 );
+	cvSetZero( imgred );
 
-//	IplImage * imgSrc1 = cvLoadImage( "./test_data/TEST_SET/y-4-3.jpg" , CV_LOAD_IMAGE_COLOR );
-//	IplImage * imgSrc2 = cvLoadImage( "./test_data/TEST_SET/g-2-1.jpg" , CV_LOAD_IMAGE_COLOR );
-//	IplImage * imgSrc3 = cvLoadImage( "./test_data/TEST_SET/y-6-3-1.jpg" , CV_LOAD_IMAGE_COLOR );
-
-//	IplImage * imgSrc = cvLoadImage( "./test_data/TEST_SET/q-4-3-1.jpg" , CV_LOAD_IMAGE_COLOR );
-
-//	if ( imgSrc == NULL )
-//		return 1;
+	bool hasma = jh::getRedPixelsInHSVRange( imgtst , adapt_thresholder , 0.1 , imgred );
 
 	if ( !hasma )
-		return -1;
-
-	IplImage * imgcolor = cvCreateImage( cvSize( 28 , 28 ) , 8  , 1 );
-
-	vector<IplImage *> imgs(1);
-	imgs[0] = imgtst;
-
-	jh::mg_classifier mgc;
-
-	jh::train_classifier( imgs , adapt_thresholder , 20 , 200 ,  mgc );
-
-	bool flag = jh::getRedPixels( imgtst , adapt_thresholder , mgc , 20 , 0.01 , 0.8, imgcolor);
-
-	if ( flag == false )
 	{
-		cout << "the image is blank " << endl;
+		cout << "the image is blank!\n";
 		return -1;
 	}
 
-	cout << "start to calculating the score!\n" << endl;
-
 	vector<float> score;
-	compute_score( imgcolor , net , score );
+	compute_score( imgred , net , score );
 
 	for ( int i = 0 ; i < 10 ; i++)
 		cout << "i = " << i << "  score = " << score[i] << endl;
@@ -76,5 +50,50 @@ int main( void )
 	char s;
 	cin >>s;
 
+if ( 0 ) {
+	SolverParameter solver_param;
+	ReadSolverParamsFromTextFileOrDie( "lenet_solver_adam.prototxt" , &solver_param);
+	solver_param.mutable_train_state()->set_level(0);
+	Caffe::set_mode( Caffe::CPU );
+	shared_ptr<caffe::Solver<float> >
+		      solver(caffe::SolverRegistry<float>::CreateSolver(solver_param));
+	solver->net()->CopyTrainedLayersFrom( "_iter_5.caffemodel" );
+
+	Blob<float>* input_layer0 = solver->net()->input_blobs()[0];
+	Blob<float>* input_layer1 = solver->net()->input_blobs()[1];
+
+	float * input_data0 = input_layer0->mutable_cpu_data();
+	float * input_data1 = input_layer1->mutable_cpu_data();
+
+	for ( int irow = 0 ; irow < 28 ; ++ irow )
+    for ( int icol = 0 ; icol < 28 ; ++ icol )
+		input_data0[28*irow + icol] = cvGetReal2D( imgred , irow , icol ) * 0.00390625;
+
+//	for ( int i =0 ; i < 10 ; i++ )
+//		input_data1[i] = 0;
+	input_data1[0] = 0.;
+
+	solver->Solve();
+
+	return 0;
+}
+if (0 ){
+	Caffe::set_mode( Caffe::CPU );
+	shared_ptr<Net<float> > net_;
+	net_.reset( new Net<float>( string("deploy_lenet.prototxt") , TEST ) );
+	net_->CopyTrainedLayersFrom( "lenet_iter_200.caffemodel" );
+	Blob<float>* input_layer = net_->input_blobs()[0];
+	input_layer->Reshape( 1 , 1 , 28 , 28 );
+	net_->Reshape();
+	float * input_data = input_layer->mutable_cpu_data();
+	for ( int irow = 0 ; irow < 28 ; ++ irow )
+	for ( int icol = 0 ; icol < 28 ; ++ icol )
+		input_data[28*irow + icol] = cvGetReal2D( imgred , irow , icol ) * 0.00390625;
+	net_->Forward();
+	Blob<float> * output_layer = net_->output_blobs()[0];
+	const float * output_data = output_layer->cpu_data();
+	for ( int i = 0 ; i < 10 ; i ++ )
+		cout << "label= " << i << "  score = " << output_data[i] << endl;
+}
 	return 0;
 }

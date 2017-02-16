@@ -126,6 +126,41 @@ bool sort_area( const pair<CvRect , double > & feature1 , const pair<CvRect , do
     return feature1.second > feature2.second;
 }
 
+bool sort_rect_area_pair_x( const pair<CvRect , double > & feature1 , const pair<CvRect , double> & feature2 )
+{
+    return feature1.first.x > feature2.first.x;
+}
+bool sort_rect_area_pair_y( const pair<CvRect , double > & feature1 , const pair<CvRect , double> & feature2 )
+{
+    return feature1.first.y > feature2.first.y;
+}
+void merging_box( CvRect & BBOX , const CvRect & ABOX )
+{
+	int ori_left = BBOX.x;
+	int ori_right = BBOX.x + BBOX.width;
+	int ori_up = BBOX.y;
+	int ori_down = BBOX.y + BBOX.height;
+
+	int add_left = ABOX.x;
+	int add_right = ABOX.x + ABOX.width;
+	int add_up = ABOX.y;
+	int add_down = ABOX.y + ABOX.height;
+
+	int mer_left = ori_left;
+	int mer_right = ori_right;
+	int mer_up = ori_up;
+	int mer_down = ori_down;
+	if ( mer_left > add_left ) mer_left = add_left;
+	if ( mer_right < add_right ) mer_right = add_right;
+	if ( mer_up > add_up ) mer_up = add_up;
+	if ( mer_down < add_down ) mer_down = add_down;
+
+	BBOX.x = mer_left;
+	BBOX.y = mer_up;
+	BBOX.width = mer_right - mer_left;
+	BBOX.height = mer_down - mer_up;
+}
+
 void matrix_inversion_2d( MAT2D & a , MAT2D & inverse )
 {
 	/*
