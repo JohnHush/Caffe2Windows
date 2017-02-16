@@ -224,7 +224,7 @@ namespace jh
             else
                 cvSetReal2D( imgRst , ir , ic , int(cvGetReal2D( imgRst , ir , ic ) *scale_factor * 0.8) );
         }
-		showImage( imgRst , 10 , "dd" );
+//		showImage( imgRst , 10 , "dd" );
 		cvReleaseImage( & imgTMP );
 		cvReleaseImage( & imgTMP2 );
 		cvReleaseImage( & imgGra );
