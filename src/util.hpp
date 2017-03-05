@@ -1,7 +1,7 @@
-#ifndef UTIL_H
-#define UTIL_H
+#ifndef __JohnHush_UTIL_H
+#define __JohnHush_UTIL_H
 
-#include "caffe.pb.h"
+#include "caffe/proto/caffe.pb.h"
 #include <opencv2/opencv.hpp>
 #include <vector>
 #include <algorithm>

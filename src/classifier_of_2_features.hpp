@@ -1,5 +1,5 @@
-#ifndef CLASSIFIER_OF_2_FEATURES_H_
-#define CLASSIFIER_OF_2_FEATURES_H_
+#ifndef __JohnHush_CLASSIFIER_OF_2_FEATURES_H_
+#define __JohnHush_CLASSIFIER_OF_2_FEATURES_H_
 
 #include <iostream>
 #include <vector>

@@ -1,5 +1,5 @@
-#ifndef TOOLS_CLASSIFIER_H_
-#define TOOLS_CLASSIFIER_H_
+#ifndef __JohnHush_TOOLS_CLASSIFIER_H_
+#define __JohnHush_TOOLS_CLASSIFIER_H_
 
 #include "Classifier/Mixed_Gaussian_Classifier.hpp"
 #include "util.hpp"

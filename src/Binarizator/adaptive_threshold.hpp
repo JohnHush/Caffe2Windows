@@ -1,5 +1,5 @@
-#ifndef ADAPTIVE_THRESHOLD_
-#define ADAPTIVE_THRESHOLD_
+#ifndef __JohnHush_ADAPTIVE_THRESHOLD_
+#define __JohnHush_ADAPTIVE_THRESHOLD_
 
 #include "../binarizator.hpp"
 #include <opencv2/opencv.hpp>

@@ -1,5 +1,5 @@
-#ifndef LINE_BOX_DETECTOR_H_
-#define LINE_BOX_DETECTOR_H_
+#ifndef __JohnHush_LINE_BOX_DETECTOR_H_
+#define __JohnHush_LINE_BOX_DETECTOR_H_
 
 #include "../boxDetector.hpp"
 #include <opencv2/opencv.hpp>

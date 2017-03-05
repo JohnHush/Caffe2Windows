@@ -1,5 +1,5 @@
-#ifndef MIXED_GAUSSIAN_CLASSIFIER_H_
-#define MIXED_GAUSSIAN_CLASSIFIER_H_
+#ifndef __JohnHush_MIXED_GAUSSIAN_CLASSIFIER_H_
+#define __JohnHush_MIXED_GAUSSIAN_CLASSIFIER_H_
 
 #include "../classifier_of_2_features.hpp"
 #include "../util.hpp"

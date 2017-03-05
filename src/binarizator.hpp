@@ -1,5 +1,5 @@
-#ifndef BINARIZATOR_H_
-#define BINARIZATOR_H_
+#ifndef __JohnHush_BINARIZATOR_H_
+#define __JohnHush_BINARIZATOR_H_
 
 #include <memory>
 #include <opencv2/opencv.hpp>
