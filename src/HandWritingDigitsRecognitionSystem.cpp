@@ -20,7 +20,6 @@ using namespace std;
 #include "tools_classifier.hpp"
 
 AdaThre * adapt_thresholder = nullptr;
-jh::mg_classifier * mgc = nullptr;
 
 float * imgData;
 float * imgData_col;
@@ -41,35 +40,21 @@ float * inner_w2;
 float * inner_b1;
 float * inner_b2;
 
-int epsilon_;
-int iteration_;
-
-void initPredictor( int BLOCK_SIZE , double OFFSET , int epsilon, int iteration , vector<IplImage *> & imgs )
+void initPredictor( int BLOCK_SIZE , double OFFSET  )
 {
-	epsilon_ = epsilon;
-	iteration_ = iteration;
+	CHAR exeFullPath[MAX_PATH];
+	string strPath;
+	GetModuleFileNameA(NULL,exeFullPath,MAX_PATH);
+	strPath = exeFullPath;
+	strPath = strPath.substr( 0 , strPath.rfind('\\') +1 );
+
+	string modStr = strPath + "lenet_iter_200.caffemodel";
+
 	caffe::NetParameter net;
-	fstream input( "lenet_iter_10000.caffemodel" , ios::in | ios::binary);
+	fstream input( modStr , ios::in | ios::binary);
 	net.ParseFromIstream( &input );
 
 	adapt_thresholder = new AdaThre( BLOCK_SIZE , OFFSET );
-	mgc = new jh::mg_classifier;
-
-	if ( imgs.size() == 0 )
-	{
-		imgs.resize(1);
-		IplImage * imgSrc1 = cvLoadImage( "g-2-1.jpg" , CV_LOAD_IMAGE_COLOR );
-//		IplImage * imgSrc2 = cvLoadImage( "g-illegal-1.jpg" , CV_LOAD_IMAGE_COLOR );
-//		IplImage * imgSrc3 = cvLoadImage( "y-4-3.jpg" , CV_LOAD_IMAGE_COLOR );
-//		IplImage * imgSrc4 = cvLoadImage( "y-6-3-1.jpg" , CV_LOAD_IMAGE_COLOR );
-
-		imgs[0] = imgSrc1;
-//		imgs[1] = imgSrc2;
-//		imgs[2] = imgSrc3;
-//		imgs[3] = imgSrc4;
-	}
-
-	jh::train_classifier( imgs , *adapt_thresholder , epsilon , iteration ,  *mgc );
 
 	imgData		= new float [ 28 * 28 ];
 	k1			= new float [ 20 * 25 ];
@@ -96,6 +81,7 @@ void initPredictor( int BLOCK_SIZE , double OFFSET , int epsilon, int iteration 
 	inner_b2	= new float [ 10 ];
 	inner_r2	= new float [ 10 ];
 
+
 	for ( int i = 0 ; i < 20 * 25 ; ++i )
 		k1[i] = net.layer(1).blobs(0).data(i);
 
@@ -116,6 +102,7 @@ void initPredictor( int BLOCK_SIZE , double OFFSET , int epsilon, int iteration 
 		inner_w2[i] = net.layer(7).blobs(0).data(i);
 	for ( int i = 0 ; i < 10 ; i ++ )
 		inner_b2[i] = net.layer(7).blobs(1).data(i);
+
 }
 
 void deletePredictor()
@@ -140,52 +127,23 @@ void deletePredictor()
 	delete [] inner_b2;
 }
 
-int looksLikeNumber( IplImage * imgSrc , float if_less_than_then_its_blank  , float keep_at_least_area  )
+ int looksLikeNumber( IplImage * imgSrc   , float & confidence , float red_pts_prec  )
 {
-	//std::cout << "start doing adaptive thresholding \n" << std::endl;
-	//clock_t start_threshold = clock();
-
-	//IplImage * imgThreshold = cvCreateImage( cvGetSize( imgSrc ) , 8 , 1 );
-	//adapt_thresholder->binarizate( imgSrc , imgThreshold );
-	//for ( int irow = 0 ; irow < imgSrc->height ; ++ irow )
-	//for ( int icol = 0 ; icol < imgSrc->width  ; ++ icol )
-	//{
-	//	if ( cvGetReal2D( imgThreshold , irow , icol ) == 255 )
-	//		cvSet2D( imgSrc , irow , icol , cvScalar(0,0,0) );
-	//}
-
-	////clock_t end_threshold = clock();
-	////std::cout << "time of adaptive thresholding is = " << (end_threshold - start_threshold) << endl;
-	////std::cout << "start doing Mixed Gaussian separation \n" << std::endl;
-	////clock_t start_MGRPD = clock();
-
-	//MixedGaussianRPD MGPRD( imgSrc );
-	//MGPRD.hasRedPixels();
-	//if ( !MGPRD.redOrNot())
-	//{
-	//	cvReleaseImage( &imgThreshold );
-	//	return -1;
-	//}
-
-	//clock_t end_MGRPD = clock();
-	//std::cout << "time of Mixed Gaussian is = " << (end_MGRPD - start_MGRPD) << endl;
-	//std::cout << "start doing getting red pixels \n" << std::endl;
-	//clock_t start_getred = clock();
-	clock_t start_net = clock();
-
 	IplImage * imgcolor = cvCreateImage( cvSize( 28 , 28 ) , 8  , 1 );
-
-	bool flag = jh::getRedPixels( imgSrc , *adapt_thresholder , *mgc , epsilon_ , if_less_than_then_its_blank , keep_at_least_area , imgcolor);
-
-	if ( flag == false )
-		return -1;
-
-//	MGPRD.getRedPixels( imgcolor );
-
-	//clock_t end_getred = clock();
-	//std::cout << "time of Getting Red is = " << (end_getred - start_getred) << endl;
-	//std::cout << "start doing prediction using the CNN_NET \n" << std::endl;
 	
+	cvSetZero( imgcolor );
+
+	bool hasma = jh::getRedPixelsInHSVRange( imgSrc , *adapt_thresholder , red_pts_prec , imgcolor );	
+
+	if ( !hasma ) 
+	{
+		cvReleaseImage( &imgcolor );
+		confidence = 1;
+		return -1;
+	}
+
+//	string te2("1111111end");
+//	MessageBoxA(NULL,"1111111end","1111111end",MB_OK|MB_SYSTEMMODAL);
 
 	vector<float> score(10);
 	for ( int irow = 0 ; irow < 28 ; ++ irow )
@@ -215,12 +173,23 @@ int looksLikeNumber( IplImage * imgSrc , float if_less_than_then_its_blank  , fl
 	for ( int i = 0 ; i < 10 ; i++ )
 		score[i] = inner_r2[i];
 
-	clock_t end_net = clock();
-	std::cout << "time of IDENTIFY is = " << (end_net - start_net) << endl;
+	// add softmax loss layer
+	
+	int max_index = findMax( score );
+	for ( int i = 0 ; i < 10 ; i ++ )
+		inner_r2[i] = score[i] - score[max_index];
 
-	//cvReleaseImage( &imgThreshold );
+	float sum_exp = 0.;
+	for ( int i = 0 ; i < 10 ; i ++ )
+		sum_exp += std::exp( inner_r2[i] );
+
+	for ( int i = 0 ; i < 10 ; i ++ )
+		score[i] = std::exp( inner_r2[i] ) / sum_exp;
+
+	confidence = score[ max_index ];
+
 	cvReleaseImage( &imgcolor );
 
-	return findMax( score );
+	return max_index ;
 
 }
