@@ -1,6 +1,6 @@
 #include "HandWritingDigitsRecognitionSystem.h"
 
-#include "caffe.pb.h"
+#include "caffe/proto/caffe.pb.h"
 #include <opencv2/opencv.hpp>
 #include <google/protobuf/io/coded_stream.h>
 #include <google/protobuf/io/zero_copy_stream_impl.h>
@@ -9,7 +9,14 @@
 #include <vector>
 #include <fstream>
 #include <time.h>
+
+#ifdef MSVC
 #include <windows.h>
+#endif
+
+#ifdef APPLE
+#include <mach-o/dyld.h>
+#endif
 
 using namespace std;
 
@@ -42,14 +49,25 @@ float * inner_b2;
 
 void initPredictor( int BLOCK_SIZE , double OFFSET  )
 {
+#ifdef MSVC
 	CHAR exeFullPath[MAX_PATH];
 	string strPath;
 	GetModuleFileNameA(NULL,exeFullPath,MAX_PATH);
 	strPath = exeFullPath;
 	strPath = strPath.substr( 0 , strPath.rfind('\\') +1 );
+#endif
+
+#ifdef APPLE
+    char exeFullPath[1024];
+    unsigned size = 1024;
+    string strPath;
+    _NSGetExecutablePath( exeFullPath , &size );
+    exeFullPath[size] = '\0';
+    strPath = exeFullPath;
+    strPath = strPath.substr( 0 , strPath.rfind( '/' )+1 );
+#endif
 
 	string modStr = strPath + "lenet_iter_200.caffemodel";
-
 	caffe::NetParameter net;
 	fstream input( modStr , ios::in | ios::binary);
 	net.ParseFromIstream( &input );

@@ -21,7 +21,7 @@ int main( int argc , char ** argv )
 
 	IplImage * imgtst = cvLoadImage( "/Users/JohnHush/Documents/orion-eye/test_data/color_5.jpg" , CV_LOAD_IMAGE_COLOR );
 
-    showImage( imgtst , 0.2, "test data " , 0 );
+//    showImage( imgtst , 0.2, "test data " , 0 );
 	if ( imgtst == NULL )
     {
         printf( "we don't get an image!\n " );
@@ -32,7 +32,6 @@ int main( int argc , char ** argv )
 	fstream input( filename , ios::in | ios::binary);	
 	net.ParseFromIstream( &input );
     
-    cout << "11\n" << endl;
 	AdaThre adapt_thresholder( 201 , 20 );
 
 	IplImage * imgred = cvCreateImage( cvSize(28,28) , 8 , 1 );

@@ -1,8 +1,4 @@
 #include "line_box_detector.hpp"
-#include <opencv2/opencv.hpp>
-#include <iostream>
-#include <vector>
-#include "../util.hpp"
 
 using std::vector;
 using std::pair;

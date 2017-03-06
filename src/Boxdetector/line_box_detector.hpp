@@ -5,6 +5,8 @@
 #include <opencv2/opencv.hpp>
 #include <algorithm>
 #include <vector>
+#include <iostream>
+#include "../util.hpp"
 
 using std::pair;
 
@@ -19,8 +21,8 @@ class LineBoxDetector : public BoxDetector
 	public:
 		explicit LineBoxDetector( IplImage * imgSrc , float space_gap ): 
 			BoxDetector( imgSrc ), spaceGap_(space_gap){}
-		virtual ~LineBoxDetector(){}
 		virtual void detectBox();
+		virtual ~LineBoxDetector(){};
 		void showOnImage() const ;
 		inline static bool sortT( const pair<int , int > & a , const pair<int , int> & b)
 		{
