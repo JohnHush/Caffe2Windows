@@ -25,6 +25,8 @@ int main( int argc , char ** argv )
 	if ( imgtst == NULL )
     {
         printf( "we don't get an image!\n " );
+		char sss;
+		cin >> sss;
 		return -1;
     }
 	const char * filename = "/Users/JohnHush/Documents/orion-eye/src/lenet_iter_10000.caffemodel";
