@@ -2,6 +2,17 @@ cmake_minimum_required( VERSION 3.0 )
 
 project( TEST_IDENTIFY C CXX )
 
+if ( UNIX )
+	include( /home/pitaloveu/caffe/build/install/share/Caffe/CaffeConfig.cmake)
+	add_definitions( -DAPPLE ${Caffe_DEFINITIONS} )
+	include_directories( ${Caffe_INCLUDE_DIRS} )
+	include_directories( BEFORE /usr/include/openblas )
+	link_libraries( ${Caffe_LIBRARIES} )
+	link_libraries( ${OpenCV_LIBS} )
+	link_libraries( /usr/lib64/libopenblas.so )
+	add_subdirectory( src src_build )
+endif()
+
 if ( APPLE )
 
 include( /Users/JohnHush/caffe/build/install/share/Caffe/CaffeConfig.cmake )
@@ -22,4 +33,5 @@ add_subdirectory( src src_build )
 
 set( CMAKE_INSTALL_PREFIX ${CMAKE_BINARY_DIR}/install )
 
-endif( MSVC )
+endif()
+

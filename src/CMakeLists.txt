@@ -5,13 +5,13 @@ list( APPEND SRC_LIST Binarizator/adaptive_threshold.cpp )
 list( APPEND SRC_LIST Boxdetector/line_box_detector.cpp )
 list( APPEND SRC_LIST Classifier/Mixed_Gaussian_Classifier.cpp )
 
-set( CMAKE_BUILD_TYPE Release )
+#set( CMAKE_BUILD_TYPE Release )
 
 add_executable( MAINENTRY ${SRC_LIST} )
 
-target_link_libraries( MAINENTRY ${Caffe_LIBRARIES} ${OpenCV_LIBS} )
+#target_link_libraries( MAINENTRY ${OpenBLAS_LIB} ${Caffe_LIBRARIES} ${OpenCV_LIBS} )
 
-
+if ( MSVC )
 set( SRC_LIST_LIB "" )
 
 list( APPEND SRC_LIST_LIB Boxdetector/line_box_detector.hpp )
@@ -29,3 +29,4 @@ INSTALL( TARGETS OCRLIB
         RUNTIME DESTINATION bin
         LIBRARY DESTINATION staticlib
         ARCHIVE DESTINATION lib )
+endif()
