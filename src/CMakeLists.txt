@@ -29,4 +29,4 @@ INSTALL( TARGETS OCRLIB
         RUNTIME DESTINATION bin
         LIBRARY DESTINATION staticlib
         ARCHIVE DESTINATION lib )
-endif()
+endif( MSVC )

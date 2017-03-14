@@ -1,6 +1,7 @@
 #include "util.hpp"
 #include <iostream>
 #include <vector>
+#include "caffe/proto/caffe.pb.h"
 
 using std::cout;
 using std::endl;
@@ -365,4 +366,71 @@ void compute_score( IplImage * imgSrc , ::caffe::NetParameter & net , vector<flo
 		score[i] = std::exp( inner_r2[i] ) / sum_exp;
 	delete [] inner_r2;
 
+}
+
+vector<float> compute_score_by_caffe( const IplImage * imgSrc , const string & deploy_model , const string & caffe_model )
+{
+	using namespace caffe;
+
+	Caffe::set_mode( Caffe::CPU );
+	shared_ptr<Net<float> > net_;
+	net_.reset( new Net<float>( deploy_model , TEST ) );
+	net_->CopyTrainedLayersFrom( caffe_model );
+	Blob<float>* input_layer = net_->input_blobs()[0];
+	input_layer->Reshape( 1 , 1 , 28 , 28 );
+	net_->Reshape();
+	float * input_data = input_layer->mutable_cpu_data();
+	for ( int irow = 0 ; irow < 28 ; ++ irow )
+	for ( int icol = 0 ; icol < 28 ; ++ icol )
+		input_data[28*irow + icol] = cvGetReal2D( imgSrc , irow , icol ) * 0.00390625;
+	net_->Forward();
+	Blob<float> * output_layer = net_->output_blobs()[0];
+	const float * output_data = output_layer->cpu_data();
+	vector<float> score( 10 );
+	for ( int i = 0 ; i < 10 ; i ++ )
+		score[i] = output_data[i];
+
+	return score;
+}
+
+void finetune_model_by_caffe( const string & solver_prototxt , const string & pretrained_model , const string & trained_model , const IplImage * imgSrc , const int label )
+{
+	using namespace caffe;
+
+	SolverParameter solver_param;
+
+	solver_param.set_net( "/home/pitaloveu/orion-eye/src/lenet_train.prototxt" );
+	solver_param.set_test_iter( 0 );
+	solver_param.set_test_interval( 500 );
+	solver_param.set_base_lr( 0.0001 );
+	solver_param.set_momentum( 0.9 );
+	solver_param.set_momentum2( 0.999 );
+	solver_param.set_lr_policy( "fixed" );
+	solver_param.set_display( 0 );
+	solver_param.set_max_iter( 5 );
+	solver_param.set_snapshot( 5 );
+	solver_param.set_snapshot_prefix( "retrained" );
+	solver_param.set_type( "Adam" );
+	solver_param.set_solver_mode( SolverParameter::CPU );
+
+//	ReadSolverParamsFromTextFileOrDie( solver_prototxt , &solver_param);
+	solver_param.mutable_train_state()->set_level(0);
+	Caffe::set_mode( Caffe::CPU );
+	shared_ptr<caffe::Solver<float> >
+              solver(caffe::SolverRegistry<float>::CreateSolver(solver_param));
+	solver->net()->CopyTrainedLayersFrom( pretrained_model );
+
+	Blob<float>* input_layer0 = solver->net()->input_blobs()[0];
+	Blob<float>* input_layer1 = solver->net()->input_blobs()[1];
+
+	float * input_data0 = input_layer0->mutable_cpu_data();
+	float * input_data1 = input_layer1->mutable_cpu_data();
+
+	for ( int irow = 0 ; irow < 28 ; ++ irow )
+	for ( int icol = 0 ; icol < 28 ; ++ icol )
+		input_data0[28*irow + icol] = cvGetReal2D( imgSrc , irow , icol ) * 0.00390625;
+
+	input_data1[0] = float(label);
+
+	solver->Solve();
 }

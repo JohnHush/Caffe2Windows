@@ -7,6 +7,7 @@
 #include <algorithm>
 #include <cblas.h>
 #include <string>
+#include "caffe/caffe.hpp"
 
 using std::string;
 using std::vector;
@@ -52,5 +53,11 @@ bool sort_rect_area_pair_x( const pair<CvRect , double > & feature1 , const pair
 bool sort_rect_area_pair_y( const pair<CvRect , double > & feature1 , const pair<CvRect , double> & feature2 );
 void merging_box( CvRect & BBOX , const CvRect & ABOX );
 // merging the rectangular box from BBOX, adding ABOX
+
+vector<float> compute_score_by_caffe( const IplImage * imgSrc , const  string & deploy_model , const  string & caffe_model );
+// compute the score using caffe library, use its forward() function in Net
+
+void finetune_model_by_caffe( const string & solver_prototxt , const string & pretrained_model , const string & trained_model , const IplImage * imgSrc , const int input_label );
+// finetune a pre-trained model using caffe lib
 
 #endif

@@ -5,6 +5,7 @@
 #include <vector>
 #include <fstream>
 #include "Boxdetector/line_box_detector.hpp"
+#include "caffe/caffe.hpp"
 
 using namespace std;
 using namespace caffe;
@@ -13,23 +14,21 @@ using namespace caffe;
 #include "util.hpp"
 #include "Binarizator/adaptive_threshold.hpp"
 #include "tools_classifier.hpp"
+#define FINETUNE
 
 int main( int argc , char ** argv )
 {
-//	string name ( argv[1] );
 	string file_name;
 
-	IplImage * imgtst = cvLoadImage( "/Users/JohnHush/Documents/orion-eye/test_data/color_5.jpg" , CV_LOAD_IMAGE_COLOR );
+//	IplImage * imgtst = cvLoadImage( "/home/pitaloveu/orion-eye/test_data/color_5.jpg" , CV_LOAD_IMAGE_COLOR );
+	IplImage * imgtst = cvLoadImage( argv[1] , CV_LOAD_IMAGE_COLOR );
 
-//    showImage( imgtst , 0.2, "test data " , 0 );
 	if ( imgtst == NULL )
     {
         printf( "we don't get an image!\n " );
-		char sss;
-		cin >> sss;
 		return -1;
     }
-	const char * filename = "/Users/JohnHush/Documents/orion-eye/src/lenet_iter_10000.caffemodel";
+	const char * filename = "/home/pitaloveu/orion-eye/src/lenet_iter_10000.caffemodel";
 	caffe::NetParameter net;
 	fstream input( filename , ios::in | ios::binary);	
 	net.ParseFromIstream( &input );
@@ -46,16 +45,24 @@ int main( int argc , char ** argv )
 		cout << "the image is blank!\n";
 		return -1;
 	}
+#ifdef FINETUNE
+	int input_label = 7;
+//	IplImage * img_finetune = cvLoadImage( argv[1] , CV_LOAD_IMAGE_COLOR );
+	string solver_prototxt( "/home/pitaloveu/orion-eye/src/lenet_solver_adam.prototxt" );
+	string pretrained_model( "/home/pitaloveu/orion-eye/src/lenet_iter_10000.caffemodel" );
+	finetune_model_by_caffe( solver_prototxt , pretrained_model , "" , imgred , input_label );
+#endif
 
-	vector<float> score;
-	compute_score( imgred , net , score );
+//	vector<float> score(10,0);
+	string deployModel( "/home/pitaloveu/orion-eye/src/deploy_lenet.prototxt" );
+	string caffeModel( "/home/pitaloveu/Desktop/retrained_iter_5.caffemodel" );
+	vector<float> score = compute_score_by_caffe( imgred , deployModel , caffeModel );
+//	compute_score( imgred , net , score );
 
 	for ( int i = 0 ; i < 10 ; i++)
 		cout << "i = " << i << "  score = " << score[i] << endl;
 
 	cout << "end of calculating the score!\n" << endl;
-	char s;
-	cin >>s;
 
 	return 0;
 }

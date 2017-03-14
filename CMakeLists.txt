@@ -4,7 +4,7 @@ project( TEST_IDENTIFY C CXX )
 
 if ( UNIX )
 	include( /home/pitaloveu/caffe/build/install/share/Caffe/CaffeConfig.cmake)
-	add_definitions( -DAPPLE ${Caffe_DEFINITIONS} )
+	add_definitions( -DUNIX ${Caffe_DEFINITIONS} )
 	include_directories( ${Caffe_INCLUDE_DIRS} )
 	include_directories( BEFORE /usr/include/openblas )
 	link_libraries( ${Caffe_LIBRARIES} )
