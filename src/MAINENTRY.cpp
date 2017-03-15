@@ -14,13 +14,12 @@ using namespace caffe;
 #include "util.hpp"
 #include "Binarizator/adaptive_threshold.hpp"
 #include "tools_classifier.hpp"
-#define FINETUNE
+//#define FINETUNE
 
 int main( int argc , char ** argv )
 {
 	string file_name;
 
-//	IplImage * imgtst = cvLoadImage( "/home/pitaloveu/orion-eye/test_data/color_5.jpg" , CV_LOAD_IMAGE_COLOR );
 	IplImage * imgtst = cvLoadImage( argv[1] , CV_LOAD_IMAGE_COLOR );
 
 	if ( imgtst == NULL )
@@ -28,10 +27,6 @@ int main( int argc , char ** argv )
         printf( "we don't get an image!\n " );
 		return -1;
     }
-	const char * filename = "/home/pitaloveu/orion-eye/src/lenet_iter_10000.caffemodel";
-	caffe::NetParameter net;
-	fstream input( filename , ios::in | ios::binary);	
-	net.ParseFromIstream( &input );
     
 	AdaThre adapt_thresholder( 201 , 20 );
 
@@ -40,29 +35,23 @@ int main( int argc , char ** argv )
 
 	bool hasma = jh::getRedPixelsInHSVRange( imgtst , adapt_thresholder , 0.1 , imgred );
 
+	showImage( imgred , 10 , "red" );
+
 	if ( !hasma )
 	{
 		cout << "the image is blank!\n";
 		return -1;
 	}
 #ifdef FINETUNE
-	int input_label = 7;
-//	IplImage * img_finetune = cvLoadImage( argv[1] , CV_LOAD_IMAGE_COLOR );
-	string solver_prototxt( "/home/pitaloveu/orion-eye/src/lenet_solver_adam.prototxt" );
-	string pretrained_model( "/home/pitaloveu/orion-eye/src/lenet_iter_10000.caffemodel" );
-	finetune_model_by_caffe( solver_prototxt , pretrained_model , "" , imgred , input_label );
+	int input_label = argv[2][0] - '0';
+	finetune_by_caffe( "lenet_FINETUNE.caffemodel" , "lenet_train.prototxt" , imgred , input_label );
 #endif
-
-//	vector<float> score(10,0);
-	string deployModel( "/home/pitaloveu/orion-eye/src/deploy_lenet.prototxt" );
-	string caffeModel( "/home/pitaloveu/Desktop/retrained_iter_5.caffemodel" );
+	string deployModel( "/home/pitaloveu/orion-eye/build/src_build/deploy_lenet.prototxt" );
+	string caffeModel( "/home/pitaloveu/orion-eye/build/src_build/lenet_FINETUNE.caffemodel" );
 	vector<float> score = compute_score_by_caffe( imgred , deployModel , caffeModel );
-//	compute_score( imgred , net , score );
 
 	for ( int i = 0 ; i < 10 ; i++)
 		cout << "i = " << i << "  score = " << score[i] << endl;
-
-	cout << "end of calculating the score!\n" << endl;
 
 	return 0;
 }

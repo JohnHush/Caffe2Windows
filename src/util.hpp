@@ -57,7 +57,7 @@ void merging_box( CvRect & BBOX , const CvRect & ABOX );
 vector<float> compute_score_by_caffe( const IplImage * imgSrc , const  string & deploy_model , const  string & caffe_model );
 // compute the score using caffe library, use its forward() function in Net
 
-void finetune_model_by_caffe( const string & solver_prototxt , const string & pretrained_model , const string & trained_model , const IplImage * imgSrc , const int input_label );
+void finetune_by_caffe( const string & pretrained_model , const string & train_net_arch_prototxt , const IplImage *     imgSrc , const int label );
 // finetune a pre-trained model using caffe lib
 
 #endif

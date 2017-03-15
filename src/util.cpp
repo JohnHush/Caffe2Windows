@@ -2,6 +2,13 @@
 #include <iostream>
 #include <vector>
 #include "caffe/proto/caffe.pb.h"
+#include <string>
+#include <sstream>
+#include <cstdio>
+
+#ifdef UNIX
+#include <unistd.h>
+#endif
 
 using std::cout;
 using std::endl;
@@ -393,32 +400,65 @@ vector<float> compute_score_by_caffe( const IplImage * imgSrc , const string & d
 	return score;
 }
 
-void finetune_model_by_caffe( const string & solver_prototxt , const string & pretrained_model , const string & trained_model , const IplImage * imgSrc , const int label )
+void finetune_by_caffe( const string & pretrained_model , const string & train_net_arch_prototxt , const IplImage * imgSrc , const int label )
+// we gonna have two functions, 
+// 1 : finetune()
+//    this function just finetune the pretrained model previously
+// 2 : get_back()
 {
 	using namespace caffe;
 
 	SolverParameter solver_param;
 
-	solver_param.set_net( "/home/pitaloveu/orion-eye/src/lenet_train.prototxt" );
-	solver_param.set_test_iter( 0 );
+#ifdef UNIX
+	int MAXBUFSIZE = 1024;
+	int count;
+	char buf[MAXBUFSIZE];
+
+	count = readlink( "/proc/self/exe" , buf , MAXBUFSIZE );
+	if ( count < 0 || count >= MAXBUFSIZE )
+		LOG(FATAL) << "size of the exe path wrong !" << std::endl;
+
+	string exePath( buf );
+	exePath = exePath.substr( 0 , exePath.rfind( '/' ) + 1 );
+	LOG(INFO) << exePath << std::endl;
+#endif
+
+#if defined(APPLE) || defined( MSVC )
+	LOG(FATAL) << "implement the method here" << std::endl;
+#endif
+	const int iteration_times = 10;
+	stringstream ss;
+	string s_iteration_times;
+	ss << iteration_times;
+	ss >> s_iteration_times;
+
+	solver_param.set_net( (exePath + train_net_arch_prototxt ).c_str() );
+	solver_param.add_test_iter( 0 );
 	solver_param.set_test_interval( 500 );
 	solver_param.set_base_lr( 0.0001 );
 	solver_param.set_momentum( 0.9 );
 	solver_param.set_momentum2( 0.999 );
 	solver_param.set_lr_policy( "fixed" );
 	solver_param.set_display( 0 );
-	solver_param.set_max_iter( 5 );
-	solver_param.set_snapshot( 5 );
+	solver_param.set_max_iter( iteration_times );
+	solver_param.set_snapshot( iteration_times );
 	solver_param.set_snapshot_prefix( "retrained" );
 	solver_param.set_type( "Adam" );
 	solver_param.set_solver_mode( SolverParameter::CPU );
+
+	string name_retrained_model_by_caffe( solver_param.snapshot_prefix() + 
+			"_iter_" + s_iteration_times + ".caffemodel");
+
+	string name_retrained_solvestate_by_caffe( solver_param.snapshot_prefix() + 
+			"_iter_" + s_iteration_times + ".solverstate");
 
 //	ReadSolverParamsFromTextFileOrDie( solver_prototxt , &solver_param);
 	solver_param.mutable_train_state()->set_level(0);
 	Caffe::set_mode( Caffe::CPU );
 	shared_ptr<caffe::Solver<float> >
               solver(caffe::SolverRegistry<float>::CreateSolver(solver_param));
-	solver->net()->CopyTrainedLayersFrom( pretrained_model );
+	solver->net()->CopyTrainedLayersFrom( exePath + pretrained_model );
 
 	Blob<float>* input_layer0 = solver->net()->input_blobs()[0];
 	Blob<float>* input_layer1 = solver->net()->input_blobs()[1];
@@ -433,4 +473,11 @@ void finetune_model_by_caffe( const string & solver_prototxt , const string & pr
 	input_data1[0] = float(label);
 
 	solver->Solve();
+
+	if ( std::remove( ( exePath + pretrained_model ).c_str() ) != 0 )
+		LOG(FATAL) << "cannot remove pretrained model for unknown reason!" << std::endl;
+	if ( std::rename( name_retrained_model_by_caffe.c_str() , (exePath + pretrained_model).c_str() ) != 0 )
+		LOG(FATAL) << "unable to change the file name of the trained model for unknown reason!" << std::endl;
+	if ( std::remove( name_retrained_solvestate_by_caffe.c_str() )!= 0 ) 
+		LOG(FATAL) << "unable to delete the solverstate file for unknown reason!" << std::endl;
 }
