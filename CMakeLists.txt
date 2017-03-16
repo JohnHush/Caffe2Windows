@@ -22,8 +22,8 @@ add_subdirectory( src src_build )
 endif( APPLE )
 
 if( MSVC )
-include( D://caffe//scripts//build//libraries//caffe-builder-config.cmake )
-include ( D://caffe//scripts//build//install//share//Caffe//CaffeConfig.cmake )
+	include( D://MyLibs//caffe-rely//caffe-builder-config.cmake )
+	include( D://MyLibs//caffe//share//Caffe//CaffeConfig.cmake )
 
 add_definitions( -DMSVC ${Caffe_DEFINITIONS} )
 include_directories( ${Caffe_INCLUDE_DIRS} )

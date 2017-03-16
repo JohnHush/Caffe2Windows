@@ -9,6 +9,9 @@
 #ifdef UNIX
 #include <unistd.h>
 #endif
+#ifdef MSVC
+#include <windows.h>
+#endif
 
 using std::cout;
 using std::endl;
@@ -424,7 +427,15 @@ void finetune_by_caffe( const string & pretrained_model , const string & train_n
 	LOG(INFO) << exePath << std::endl;
 #endif
 
-#if defined(APPLE) || defined( MSVC )
+#ifdef MSVC
+	CHAR exeFullPath[MAX_PATH];
+	string exePath;
+	GetModuleFileNameA(NULL, exeFullPath, MAX_PATH);
+	exePath = exeFullPath;
+	exePath = exePath.substr(0, exePath.rfind('\\') + 1);
+#endif
+
+#ifdef APPLE
 	LOG(FATAL) << "implement the method here" << std::endl;
 #endif
 	const int iteration_times = 10;

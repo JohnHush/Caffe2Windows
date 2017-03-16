@@ -20,7 +20,7 @@ list( APPEND SRC_LIST_LIB Binarizator/adaptive_threshold.cpp )
 list( APPEND SRC_LIST_LIB Boxdetector/line_box_detector.cpp )
 list( APPEND SRC_LIST_LIB Classifier/Mixed_Gaussian_Classifier.cpp )
 
-add_library( OCRLIB STATIC ${SRC_LIST_LIB} )
+add_library( OCRLIB SHARED ${SRC_LIST_LIB} )
 
 target_link_libraries( OCRLIB ${Caffe_LIBRARIES} ${OpenCV_LIBS} )
 

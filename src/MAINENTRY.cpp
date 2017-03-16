@@ -19,8 +19,13 @@ using namespace caffe;
 int main( int argc , char ** argv )
 {
 	string file_name;
+#ifdef UNIX
 
 	IplImage * imgtst = cvLoadImage( argv[1] , CV_LOAD_IMAGE_COLOR );
+#endif
+#ifdef MSVC
+	IplImage * imgtst = cvLoadImage( "D:\\MyProjects\\orion-eye\\test_data\\color_5.jpg" , CV_LOAD_IMAGE_COLOR );
+#endif
 
 	if ( imgtst == NULL )
     {
@@ -46,12 +51,20 @@ int main( int argc , char ** argv )
 	int input_label = argv[2][0] - '0';
 	finetune_by_caffe( "lenet_FINETUNE.caffemodel" , "lenet_train.prototxt" , imgred , input_label );
 #endif
+#ifdef UNIX
 	string deployModel( "/home/pitaloveu/orion-eye/build/src_build/deploy_lenet.prototxt" );
 	string caffeModel( "/home/pitaloveu/orion-eye/build/src_build/lenet_FINETUNE.caffemodel" );
+#endif
+#ifdef MSVC
+	string deployModel( "D:\\MyProjects\\orion-eye\\deploy_lenet.prototxt" );
+	string caffeModel( "D:\\MyProjects\\orion-eye\\lenet_FINETUNE.caffemodel" );
+#endif
 	vector<float> score = compute_score_by_caffe( imgred , deployModel , caffeModel );
 
 	for ( int i = 0 ; i < 10 ; i++)
 		cout << "i = " << i << "  score = " << score[i] << endl;
 
+	char sb;
+	std::cin >> sb;
 	return 0;
 }
