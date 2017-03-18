@@ -13,6 +13,7 @@ if ( UNIX )
 	add_subdirectory( src src_build )
 endif()
 
+
 if ( APPLE )
 
 include( /Users/JohnHush/caffe/build/install/share/Caffe/CaffeConfig.cmake )
@@ -23,6 +24,11 @@ endif( APPLE )
 
 if( MSVC )
 	include( D://MyLibs//caffe-rely//caffe-builder-config.cmake )
+set(OPENCV_DIR "D:\\MyLibs\\opencv2_4_13"  CACHE PATH "")
+set(opencv_DIR "D:\\MyLibs\\opencv2_4_13"  CACHE PATH "")
+set(OpenCV_DIR "D:\\MyLibs\\opencv2_4_13"  CACHE PATH "")
+set(OpenCV_STATIC OFF CACHE BOOL "")
+
 	include( D://MyLibs//caffe//share//Caffe//CaffeConfig.cmake )
 
 add_definitions( -DMSVC ${Caffe_DEFINITIONS} )

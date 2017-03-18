@@ -29,4 +29,10 @@ INSTALL( TARGETS OCRLIB
         RUNTIME DESTINATION bin
         LIBRARY DESTINATION staticlib
         ARCHIVE DESTINATION lib )
+
+
+
+add_executable( DLLTEST test_dll.cpp )
+target_link_libraries( DLLTEST OCRLIB )
+
 endif( MSVC )
