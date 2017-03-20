@@ -22,11 +22,13 @@ bool getRedPixelsInHSVRange( IplImage * imgSrc , Binarizator & BINTOR , float re
 	IplImage * imgBla = cvCreateImage( cvGetSize( imgSrc ) , 8 , 1 );
 	IplImage * imgHSV = cvCreateImage( cvGetSize( imgSrc ) , 8 , 3 );
 	IplImage * imgGra = cvCreateImage( cvGetSize( imgSrc ) , 8 , 1 );
+	IplImage * imgBla4Dilate = cvCreateImage( cvGetSize( imgSrc ) , 8 , 1 );
 	BINTOR.binarizate( imgSrc , imgBin );
 	cvCvtColor( imgSrc , imgGra , CV_BGR2GRAY );
 
 	cvSetZero( imgRed );
 	cvSetZero( imgBla );
+	cvSetZero( imgBla4Dilate );
 
 	/*
 	 * seperate red points and black pts based on HSV value
@@ -37,19 +39,26 @@ bool getRedPixelsInHSVRange( IplImage * imgSrc , Binarizator & BINTOR , float re
 
 	int pts_count = 0;
 	for ( int irow = 0 ; irow < imgBin->height ; ++ irow )
-		for ( int icol = 0 ; icol < imgBin->width  ; ++ icol )
-		{
-			int HSV_H = cvGet2D( imgHSV , irow , icol ).val[0];
+	for ( int icol = 0 ; icol < imgBin->width  ; ++ icol )
+	{
+		int HSV_H = cvGet2D( imgHSV , irow , icol ).val[0];
 
-			if ( cvGetReal2D( imgBin , irow , icol ) != 255 )
+		if ( cvGetReal2D( imgBin , irow , icol ) != 255 )
+		{
+			pts_count ++;
+			if ( cvGet2D( imgHSV , irow , icol ).val[1] > 50 && ( HSV_H < 20 || HSV_H > 160 ) )
+				cvSetReal2D( imgRed , irow , icol , 255 );
+			else
 			{
-				pts_count ++;
-				if ( cvGet2D( imgHSV , irow , icol ).val[1] > 50 && ( HSV_H < 20 || HSV_H > 160 ) )
-					cvSetReal2D( imgRed , irow , icol , 255 );
-				else
-					cvSetReal2D( imgBla , irow , icol , 255 );
+				cvSetReal2D( imgBla , irow , icol , 255 );
+				cvSetReal2D( imgBla4Dilate , irow , icol , 255 );
 			}
 		}
+	}
+#ifdef DEBUG
+	showImage( imgRed , 1. , "red pixels in the image " );
+	showImage( imgBla , 1. , "black pixels in the image " );
+#endif
 	/*
 	 * finding all the lines satisfy the conditons given below
 	 * using cvHoughLine2,
@@ -73,13 +82,17 @@ bool getRedPixelsInHSVRange( IplImage * imgSrc , Binarizator & BINTOR , float re
 	}
 	IplConvKernel * dilate_kernel = cvCreateStructuringElementEx( 5 , 5 , 2 , 2 , CV_SHAPE_RECT );
 	cvDilate( imgBla , imgBla , dilate_kernel );
+	cvDilate( imgBla4Dilate , imgBla4Dilate , dilate_kernel );
 
 	for ( int irow = 0 ; irow < imgBla->height ; ++ irow )
 	for ( int icol = 0 ; icol < imgBla->width  ; ++ icol )
-		if ( cvGetReal2D( imgBla , irow , icol ) !=0 )
+		if ( cvGetReal2D( imgBla , irow , icol ) !=0 || cvGetReal2D( imgBla4Dilate , irow , icol ) !=0 )
 			cvSetReal2D( imgRed , irow , icol , 0 );
 
-	//showImage( imgRed , 1 , "dd" , 2000 );
+#ifdef DEBUG
+	showImage( imgBla , 1 , "the dilated boundary lines" );
+	showImage( imgRed , 1 , "the residual red points after filtered out the dilated boundary lines" );
+#endif
 	int red_pts_count = 0;
 	for ( int irow = 0 ; irow < imgRed->height ; ++ irow )
 	for ( int icol = 0 ; icol < imgRed->width  ; ++ icol )
@@ -90,6 +103,7 @@ bool getRedPixelsInHSVRange( IplImage * imgSrc , Binarizator & BINTOR , float re
 
 	cvReleaseImage( &imgBin );
 	cvReleaseImage( &imgBla );
+	cvReleaseImage( &imgBla4Dilate );
 	cvReleaseImage( &imgHSV );
 	cvReleaseStructuringElement( & dilate_kernel );
 

@@ -2,6 +2,11 @@ cmake_minimum_required( VERSION 3.0 )
 
 project( TEST_IDENTIFY C CXX )
 
+option( DEFINE_DEBUG "if adding #define DEBUG in the program " OFF )
+if( DEFINE_DEBUG )
+	add_definitions( -DDEBUG )
+endif( DEFINE_DEBUG )
+
 if ( UNIX )
 	include( /home/pitaloveu/caffe/build/install/share/Caffe/CaffeConfig.cmake)
 	add_definitions( -DUNIX ${Caffe_DEFINITIONS} )

@@ -38,9 +38,10 @@ int main( int argc , char ** argv )
 	IplImage * imgred = cvCreateImage( cvSize(28,28) , 8 , 1 );
 	cvSetZero( imgred );
 
-	bool hasma = jh::getRedPixelsInHSVRange( imgtst , adapt_thresholder , 0.1 , imgred );
-
+	bool hasma = jh::getRedPixelsInHSVRange( imgtst , adapt_thresholder , 0.05 , imgred );
+#ifdef DEBUG
 	showImage( imgred , 10 , "red" );
+#endif
 
 	if ( !hasma )
 	{
