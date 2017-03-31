@@ -10,7 +10,7 @@
 #include <fstream>
 #include <time.h>
 
-#ifdef MSVC
+#ifdef _WINDOWS
 #include <windows.h>
 #endif
 
@@ -49,7 +49,7 @@ float * inner_b2;
 
 void initPredictor( int BLOCK_SIZE , double OFFSET  )
 {
-#ifdef MSVC
+#ifdef _WINDOWS
 	CHAR exeFullPath[MAX_PATH];
 	string strPath;
 	GetModuleFileNameA(NULL,exeFullPath,MAX_PATH);

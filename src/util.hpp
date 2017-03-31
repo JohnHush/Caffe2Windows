@@ -59,5 +59,10 @@ vector<float> compute_score_by_caffe( const IplImage * imgSrc , const  string & 
 
 void finetune_by_caffe( const string & pretrained_model , const string & train_net_arch_prototxt , const IplImage *     imgSrc , const int label );
 // finetune a pre-trained model using caffe lib
+//
+void getback_to_ORIGINAL_MODEL( const string & pretrained_model , const string & ori_model );
+
+//in case the trained model is unable to use because of bad data.
+//we could use this function to get back to original model pretrained by JohnHush
 
 #endif

@@ -14,6 +14,7 @@ int main( int argc , char * argv[] )
 	int index = looksLikeNumber( imgSrc , confidence );
 
 	std::cout << "index = " << index << std::endl;
+	std::cout << "confidence = " << confidence << std::endl;
 
 	char s;
 

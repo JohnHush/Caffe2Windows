@@ -23,7 +23,7 @@ int main( int argc , char ** argv )
 
 	IplImage * imgtst = cvLoadImage( argv[1] , CV_LOAD_IMAGE_COLOR );
 #endif
-#ifdef MSVC
+#ifdef _WINDOWS
 	IplImage * imgtst = cvLoadImage( "D:\\MyProjects\\orion-eye\\test_data\\color_5.jpg" , CV_LOAD_IMAGE_COLOR );
 #endif
 
@@ -56,7 +56,7 @@ int main( int argc , char ** argv )
 	string deployModel( "/home/pitaloveu/orion-eye/build/src_build/deploy_lenet.prototxt" );
 	string caffeModel( "/home/pitaloveu/orion-eye/build/src_build/lenet_FINETUNE.caffemodel" );
 #endif
-#ifdef MSVC
+#ifdef _WINDOWS
 	string deployModel( "D:\\MyProjects\\orion-eye\\deploy_lenet.prototxt" );
 	string caffeModel( "D:\\MyProjects\\orion-eye\\lenet_FINETUNE.caffemodel" );
 #endif

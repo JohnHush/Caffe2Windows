@@ -28,15 +28,15 @@ add_subdirectory( src src_build )
 endif( APPLE )
 
 if( MSVC )
-	include( D://MyLibs//caffe-rely//caffe-builder-config.cmake )
+include( D://MyLibs//caffe-rely//caffe-builder-config.cmake )
 set(OPENCV_DIR "D:\\MyLibs\\opencv2_4_13"  CACHE PATH "")
 set(opencv_DIR "D:\\MyLibs\\opencv2_4_13"  CACHE PATH "")
 set(OpenCV_DIR "D:\\MyLibs\\opencv2_4_13"  CACHE PATH "")
 set(OpenCV_STATIC OFF CACHE BOOL "")
 
-	include( D://MyLibs//caffe//share//Caffe//CaffeConfig.cmake )
+include( D://MyLibs//caffe//share//Caffe//CaffeConfig.cmake )
 
-add_definitions( -DMSVC ${Caffe_DEFINITIONS} )
+add_definitions( ${Caffe_DEFINITIONS} )
 include_directories( ${Caffe_INCLUDE_DIRS} )
 link_libraries( ${Caffe_LIBRARIES} )
 link_libraries( ${OpenCV_LIBS} )

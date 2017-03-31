@@ -5,11 +5,12 @@
 #include <string>
 #include <sstream>
 #include <cstdio>
+#include <fstream>
 
 #ifdef UNIX
 #include <unistd.h>
 #endif
-#ifdef MSVC
+#ifdef _WINDOWS
 #include <windows.h>
 #endif
 
@@ -427,7 +428,7 @@ void finetune_by_caffe( const string & pretrained_model , const string & train_n
 	LOG(INFO) << exePath << std::endl;
 #endif
 
-#ifdef MSVC
+#ifdef _WINDOWS
 	CHAR exeFullPath[MAX_PATH];
 	string exePath;
 	GetModuleFileNameA(NULL, exeFullPath, MAX_PATH);
@@ -491,4 +492,37 @@ void finetune_by_caffe( const string & pretrained_model , const string & train_n
 		LOG(FATAL) << "unable to change the file name of the trained model for unknown reason!" << std::endl;
 	if ( std::remove( name_retrained_solvestate_by_caffe.c_str() )!= 0 ) 
 		LOG(FATAL) << "unable to delete the solverstate file for unknown reason!" << std::endl;
+}
+
+void getback_to_ORIGINAL_MODEL( const string & pretrained_model , const string & ori_model )
+{
+#ifdef _WINDOWS
+	CHAR exeFullPath[MAX_PATH];
+	string exePath;
+	GetModuleFileNameA( NULL , exeFullPath , MAX_PATH );
+	exePath = exeFullPath;
+	exePath = exePath.substr( 0 , exePath.rfind('\\') + 1 );
+#endif
+#if defined( UNIX ) || defined( APPLE )
+	LOG(FATAL) << "need to be implemented in unix or mac os" << std::endl;
+#endif
+
+	if ( std::remove( ( exePath + pretrained_model ).c_str() ) != 0 )
+		LOG(FATAL) << "cannot remove pretrained model for unknown reason" << std::endl;
+
+	std::fstream ORI_FILE( (exePath + ori_model).c_str() , std::ios::in|std::ios::binary );
+	std::fstream PRT_FILE( (exePath + pretrained_model).c_str() , std::ios::out|std::ios::binary );
+
+	if( ! ORI_FILE || ! PRT_FILE )
+	{
+		ORI_FILE.close();
+		PRT_FILE.close();
+		LOG(FATAL) << "cannot open file stream " << std::endl;
+	}
+	char tmp;
+	while( ORI_FILE.get(tmp) )
+		PRT_FILE << tmp;
+
+	ORI_FILE.close();
+	PRT_FILE.close();
 }
