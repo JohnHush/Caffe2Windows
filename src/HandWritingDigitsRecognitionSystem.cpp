@@ -1,32 +1,20 @@
 #include "HandWritingDigitsRecognitionSystem.h"
-
 #include "caffe/proto/caffe.pb.h"
 #include <opencv2/opencv.hpp>
-#include <google/protobuf/io/coded_stream.h>
-#include <google/protobuf/io/zero_copy_stream_impl.h>
 #include <iostream>
 #include <string>
 #include <vector>
 #include <fstream>
 #include <time.h>
-
-#ifdef _WINDOWS
-#include <windows.h>
-#endif
-
-#ifdef APPLE
-#include <mach-o/dyld.h>
-#endif
-
-using namespace std;
-
+#include "config.hpp"
 #include <fcntl.h>
 #include "util.hpp"
 #include "Binarizator/adaptive_threshold.hpp"
 #include "Classifier/Mixed_Gaussian_Classifier.hpp"
 #include "tools_classifier.hpp"
 
-AdaThre * adapt_thresholder = nullptr;
+using namespace std;
+AdaThre * adapt_thresholder = NULL;
 
 float * imgData;
 float * imgData_col;
@@ -56,6 +44,19 @@ void initPredictor( int BLOCK_SIZE , double OFFSET  )
 	strPath = exeFullPath;
 	strPath = strPath.substr( 0 , strPath.rfind('\\') +1 );
 #endif
+#ifdef UNIX
+	int MAXBUFSIZE = 1024;
+    int count;
+    char buf[MAXBUFSIZE];
+
+    count = readlink( "/proc/self/exe" , buf , MAXBUFSIZE );
+//    if ( count < 0 || count >= MAXBUFSIZE )
+//        LOG(FATAL) << "size of the exe path wrong !" << std::endl;
+
+    string strPath( buf );
+    strPath = strPath.substr( 0 , strPath.rfind( '/' ) + 1 );
+    //LOG(INFO) << strPath << std::endl;
+#endif
 
 #ifdef APPLE
     char exeFullPath[1024];
@@ -67,7 +68,7 @@ void initPredictor( int BLOCK_SIZE , double OFFSET  )
     strPath = strPath.substr( 0 , strPath.rfind( '/' )+1 );
 #endif
 
-	string modStr = strPath + "lenet_iter_200.caffemodel";
+	string modStr = strPath + "lenet_FINETUNE.caffemodel";
 	caffe::NetParameter net;
 	fstream input( modStr , ios::in | ios::binary);
 	net.ParseFromIstream( &input );

@@ -30,6 +30,7 @@ bool getRedPixelsInHSVRange( IplImage * imgSrc , Binarizator & BINTOR , float re
 	cvSetZero( imgBla );
 	cvSetZero( imgBla4Dilate );
 
+
 	/*
 	 * seperate red points and black pts based on HSV value
 	 * differences, the H value of red is nearly 0 and

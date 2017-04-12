@@ -1,7 +1,7 @@
 #include <opencv2/opencv.hpp>
 #include <caffe/caffe.hpp>
 #include <string>
-#include "../util.hpp"
+#include "util.hpp"
 #include <leveldb/db.h>
 #include <leveldb/write_batch.h>
 #include <lmdb.h>
@@ -25,7 +25,7 @@ for ( int index_img = 1 ; index_img < 23 ; index_img++ )
 	string index_num = stream.str();
 	if ( index_img < 10 )
 		index_num = string("0") + index_num;
-	string IMG_NAME = "/home/pitaloveu/Caffe2Windows/finetune_data_withoutBOX/Page00" + index_num + ".jpg";
+	string IMG_NAME = "/home/pitaloveu/orion-eye/finetune_data_withoutBOX/Page00" + index_num + ".jpg";
 //	string IMG_NAME( "/home/pitaloveu/Caffe2Windows/finetune_data_withoutBOX/Page0015.jpg" );
 	IplImage * imgSrc = cvLoadImage( IMG_NAME.c_str() , CV_LOAD_IMAGE_GRAYSCALE );
 
@@ -243,8 +243,42 @@ for ( int index_img = 1 ; index_img < 23 ; index_img++ )
 }
 random_shuffle( MyData.begin() , MyData.end() );
 
-scoped_ptr<db::DB> db(db::GetDB(string("lmdb")));
-db->Open( "../finetune_data_withoutBOX/finetune_training_data" , db::NEW);
+if ( false ){
+/*
+ * write leveldb format data
+ * using the original API
+ */
+	leveldb::DB * db;
+	leveldb::Options options;
+	options.error_if_exists = true;
+	options.create_if_missing = true;
+	leveldb::WriteBatch * batch = new leveldb::WriteBatch() ;
+
+	leveldb::Status status = leveldb::DB::Open( options , 
+				"/home/pitaloveu/orion-eye/finetune_data_withoutBOX/finetune_training_data_leveldb" , &db );
+
+	Datum datum;
+	datum.set_channels(1);
+	datum.set_height(28);
+	datum.set_width(28);
+	string value;
+
+	for ( int item_id = 0 ; item_id < 1840 ; item_id ++ )
+	{
+		datum.set_data( MyData[item_id].first , 28 * 28 );
+		datum.set_label( MyData[item_id].second );
+		string key_str = caffe::format_int(item_id, 8);
+		datum.SerializeToString(&value);
+
+		batch->Put( key_str , value );
+
+	}
+	db->Write( leveldb::WriteOptions() , batch );
+	delete batch;
+	delete db;
+}
+scoped_ptr<db::DB> db(db::GetDB(string("leveldb")));
+db->Open( "/home/pitaloveu/orion-eye/finetune_data_withoutBOX/finetune_training_data_leveldb" , db::NEW);
 scoped_ptr<db::Transaction> txn(db->NewTransaction());
 
 Datum datum;
@@ -264,7 +298,7 @@ txn->Put(key_str, value);
 txn->Commit();
 db->Close();
 
-db->Open( "../finetune_data_withoutBOX/finetune_testing_data" , db::NEW);
+db->Open( "/home/pitaloveu/orion-eye/finetune_data_withoutBOX/finetune_testing_data_leveldb" , db::NEW);
 scoped_ptr<db::Transaction> txn2(db->NewTransaction());
 
 Datum datum2;
@@ -283,6 +317,7 @@ txn2->Put(key_str, value2);
 }
 txn2->Commit();
 db->Close();
+
 
 //end
 }
