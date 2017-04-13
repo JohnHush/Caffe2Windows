@@ -44,6 +44,21 @@ add_subdirectory( src src_build )
 endif( APPLE )
 
 if( MSVC )
+	# the OCR_PREDICTION_LIB should be built by MSVC2010, in win32 system;
+	# the rely libs will contain :
+	# 1. OPENCV_2.4.6
+	# 2. OPENBLAS
+	# 3. protobuf 3.2.0
+
+	include ( D://MyLibs//VS2010LIB//opencv246//OpenCVConfig.cmake )
+	set( OPENCV246_INCLUDE_DIRS ${OpenCV_INCLUDE_DIRS} )
+	set( OPENCV246_LIBS ${OpenCV_LIBS} )
+	set( OPENBLAS_INCLUDE_DIRS D://MyLibs//VS2010LIB//OpenBLAS-v0.2.14-Win32//include )
+	set( OPENBLAS_LIBS D://MyLibs//VS2010LIB//OpenBLAS-v0.2.14-Win32//lib//libopenblas.a )
+	set( PROTOBUF_INCLUDE_DIRS D://MyLibs//VS2010LIB//protobuf//include )
+	#	set( )
+
+
 include( D://MyLibs//caffe-rely//caffe-builder-config.cmake )
 set(OPENCV_DIR "D:\\MyLibs\\opencv2_4_13"  CACHE PATH "")
 set(opencv_DIR "D:\\MyLibs\\opencv2_4_13"  CACHE PATH "")
