@@ -56,24 +56,38 @@ if( MSVC )
 	set( OPENBLAS_INCLUDE_DIRS D://MyLibs//VS2010LIB//OpenBLAS-v0.2.14-Win32//include )
 	set( OPENBLAS_LIBS D://MyLibs//VS2010LIB//OpenBLAS-v0.2.14-Win32//lib//libopenblas.a )
 	set( PROTOBUF_INCLUDE_DIRS D://MyLibs//VS2010LIB//protobuf//include )
-	#	set( )
+	set( PROTOBUF_LIBS optimized D://MyLibs//VS2010LIB//protobuf//lib//libprotobuf.lib 
+						optimized D://MyLibs//VS2010LIB//protobuf//lib//libprotobuf-lite.lib
+						optimized D://MyLibs//VS2010LIB//protobuf//lib//libprotoc.lib 
+						debug D://MyLibs//VS2010LIB//protobuf//lib//libprotobufd.lib 
+						debug D://MyLibs//VS2010LIB//protobuf//lib//libprotobuf-lited.lib
+						debug D://MyLibs//VS2010LIB//protobuf//lib//libprotocd.lib )
+
+	set( OCR_PREDICTION_LIB ${OPENCV246_LIBS} ${OPENBLAS_LIBS} ${PROTOBUF_LIBS} )
+	set( OCR_PREDICTION_INCLUDE ${OPENCV246_INCLUDE_DIRS} ${OPENBLAS_INCLUDE_DIRS} ${PROTOBUF_INCLUDE_DIRS} )
+	set( OCR_PREDICTION_DEFINITION _WINDOWS )
 
 
-include( D://MyLibs//caffe-rely//caffe-builder-config.cmake )
-set(OPENCV_DIR "D:\\MyLibs\\opencv2_4_13"  CACHE PATH "")
-set(opencv_DIR "D:\\MyLibs\\opencv2_4_13"  CACHE PATH "")
-set(OpenCV_DIR "D:\\MyLibs\\opencv2_4_13"  CACHE PATH "")
-set(OpenCV_STATIC OFF CACHE BOOL "")
+	include( D://MyLibs//caffe-rely//caffe-builder-config.cmake )
+	set(OPENCV_DIR "D:\\MyLibs\\opencv2_4_13"  CACHE PATH "")
+	set(opencv_DIR "D:\\MyLibs\\opencv2_4_13"  CACHE PATH "")
+	set(OpenCV_DIR "D:\\MyLibs\\opencv2_4_13"  CACHE PATH "")
+	set(OpenCV_STATIC OFF CACHE BOOL "")
 
-include( D://MyLibs//caffe//share//Caffe//CaffeConfig.cmake )
+	include( D://MyLibs//caffe//share//Caffe//CaffeConfig.cmake )
 
-add_definitions( ${Caffe_DEFINITIONS} )
-include_directories( ${Caffe_INCLUDE_DIRS} )
-link_libraries( ${Caffe_LIBRARIES} )
-link_libraries( ${OpenCV_LIBS} )
-add_subdirectory( src src_build )
+	set( OCR_TRAINING_LIB ${Caffe_LIBRARIES};${OpenCV_LIBS} )
+	set( OCR_TRAINING_INCLUDE ${Caffe_INCLUDE_DIRS};${OpenCV_INCLUDE_DIRS})
+	set( OCR_TRAINING_DEFINITION _WINDOWS CPU_ONLY USE_OPENCV USE_LMDB USE_LEVELDB)
+
+#add_definitions( ${Caffe_DEFINITIONS} )
+#include_directories( ${Caffe_INCLUDE_DIRS} )
+#link_libraries( ${Caffe_LIBRARIES} )
+#link_libraries( ${OpenCV_LIBS} )
+	add_subdirectory( src src_build )
 
 set( CMAKE_INSTALL_PREFIX ${CMAKE_BINARY_DIR}/install )
+
 
 endif()
 
