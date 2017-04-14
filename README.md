@@ -1,6 +1,11 @@
 # orion-eye
 
 **Hand-writting Digits Recognition System, designed by *John Hush* @ Shanghai, Nov, 2016.**
+
+## WINDOWS下目录结构
+* 生成两个lib，一个OCR_PREDICT，一个是OCR_TRAIN，其中OCR_PREDICT是在Visual Studio 2010中生成的，并且没有调用Caffe的库，只调用了OpenCV 2.4.6， OpenBLAS和protobuf，当然这三个依赖库是MSVC2010的版本；另一个lib，OCR_TRAIN是在Visual Studio 2015 上编译的，同时依赖Caffe库；
+* 整个项目还要包括若干个测试程序，它们都放在./test文件夹中，还有若干个工具程序，它们都放在./tools
+* 整个项目准备支持Window, Linux和MacOS三个系统，主要在文件读写方面会有一些出入
 ##  Overview
 
 The purpose of this project is to automatically identify the hand-writing digits, Notice that this project only does one single thing! 

@@ -20,13 +20,13 @@ list( APPEND SRC_LIST_OCRTRAIN_LIB Binarizator/adaptive_threshold.cpp )
 list( APPEND SRC_LIST_OCRTRAIN_LIB Boxdetector/line_box_detector.cpp )
 list( APPEND SRC_LIST_OCRTRAIN_LIB Classifier/Mixed_Gaussian_Classifier.cpp caffe/proto/caffe.pb.cc )
 
-#add_library( OCR_TRAIN SHARED ${SRC_LIST_OCRTRAIN_LIB})
+add_library( OCR_TRAIN SHARED ${SRC_LIST_OCRTRAIN_LIB})
 
-#target_link_libraries( OCR_TRAIN PUBLIC ${OCR_TRAINING_LIB} )
-#target_include_directories( OCR_TRAIN PUBLIC ${OCR_TRAINING_INCLUDE} )
-#target_compile_definitions( OCR_TRAIN PUBLIC ${OCR_TRAINING_DEFINITION} )
+target_link_libraries( OCR_TRAIN PUBLIC ${OCR_TRAINING_LIB} )
+target_include_directories( OCR_TRAIN PUBLIC ${OCR_TRAINING_INCLUDE} )
+target_compile_definitions( OCR_TRAIN PUBLIC ${OCR_TRAINING_DEFINITION} )
 
-#INSTALL( TARGETS OCR_PREDICT OCR_TRAIN
-#        RUNTIME DESTINATION bin
-#        LIBRARY DESTINATION staticlib
-#        ARCHIVE DESTINATION lib )
+INSTALL( TARGETS OCR_PREDICT OCR_TRAIN
+        RUNTIME DESTINATION bin
+        LIBRARY DESTINATION staticlib
+        ARCHIVE DESTINATION lib )

@@ -1,6 +1,8 @@
 #ifndef __JohnHush_UTIL_H
 #define __JohnHush_UTIL_H
 
+#define NOMINMAX
+#define NO_STRICT
 #include "caffe/proto/caffe.pb.h"
 #include <opencv2/opencv.hpp>
 #include <vector>
