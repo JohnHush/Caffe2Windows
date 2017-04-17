@@ -1,7 +1,13 @@
 #define NOMINMAX
 #define NO_STRICT
 #include "HandWritingDigitsRecognitionSystem.h"
-#include "caffe/proto/caffe.pb.h"
+
+#ifdef BUILD_OCR_PREDICT
+#include "caffe.pb.h"
+#else
+#include <caffe/proto/caffe.pb.h>
+#endif
+
 #include <opencv2/opencv.hpp>
 #include <iostream>
 #include <string>

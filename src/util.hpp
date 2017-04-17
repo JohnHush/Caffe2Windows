@@ -3,12 +3,19 @@
 
 #define NOMINMAX
 #define NO_STRICT
-#include "caffe/proto/caffe.pb.h"
+
+#ifdef BUILD_OCR_PREDICT
+#include "caffe.pb.h"
+#else
+#include <caffe/proto/caffe.pb.h>
+#endif
+
 #include <opencv2/opencv.hpp>
 #include <vector>
 #include <algorithm>
 #include <cblas.h>
 #include <string>
+#include "config.hpp"
 //#include "caffe/caffe.hpp"
 //#include "caffe.pb.h"
 
@@ -16,7 +23,7 @@ using std::string;
 using std::vector;
 using std::pair;
 
-void showImage( const IplImage * imgSrc , const float ratio , const string & windowName , const int waitingTime = 0 );
+void OCRAPI showImage( const IplImage * imgSrc , const float ratio , const string & windowName , const int waitingTime = 0 );
 
 typedef struct MAT2D
 {
@@ -41,7 +48,7 @@ template <typename Dtype>
 void im2col(const Dtype* data_im, const int channels, const int height, 
 				const int width, const int kernel_h, const int kernel_w, Dtype* data_col);
 
-void compute_score( IplImage * imgSrc , ::caffe::NetParameter & net , vector<float> & score );
+void OCRAPI compute_score( IplImage * imgSrc , ::caffe::NetParameter & net , vector<float> & score );
 
 template <typename T>
 int findMax( vector<T> & score );

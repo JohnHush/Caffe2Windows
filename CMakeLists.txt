@@ -53,8 +53,8 @@ if( MSVC )
 	include ( D://MyLibs//VS2010LIB//opencv246//OpenCVConfig.cmake )
 	set( OPENCV246_INCLUDE_DIRS ${OpenCV_INCLUDE_DIRS} )
 	set( OPENCV246_LIBS ${OpenCV_LIBS} )
-	set( OPENBLAS_INCLUDE_DIRS D://MyLibs//VS2010LIB//OpenBLAS-v0.2.14-Win32//include )
-	set( OPENBLAS_LIBS D://MyLibs//VS2010LIB//OpenBLAS-v0.2.14-Win32//lib//libopenblas.dll.a )
+	set( OPENBLAS_INCLUDE_DIRS D://MyLibs//VS2010LIB//OpenBLAS-v0.2.15-Win32//include )
+	set( OPENBLAS_LIBS D://MyLibs//VS2010LIB//OpenBLAS-v0.2.15-Win32//lib//libopenblas.dll.a )
 	set( PROTOBUF_INCLUDE_DIRS D://MyLibs//VS2010LIB//protobuf//include )
 	set( PROTOBUF_LIBS optimized D://MyLibs//VS2010LIB//protobuf//lib//libprotobuf.lib 
 						optimized D://MyLibs//VS2010LIB//protobuf//lib//libprotobuf-lite.lib
@@ -65,8 +65,11 @@ if( MSVC )
 
 	set( OCR_PREDICTION_LIB ${OPENCV246_LIBS} ${OPENBLAS_LIBS} ${PROTOBUF_LIBS} )
 	set( OCR_PREDICTION_INCLUDE ${OPENCV246_INCLUDE_DIRS} ${OPENBLAS_INCLUDE_DIRS} ${PROTOBUF_INCLUDE_DIRS} )
-	set( OCR_PREDICTION_DEFINITION _WINDOWS )
+	set( OCR_PREDICTION_DEFINITION _WINDOWS BUILD_OCR_PREDICT )
 
+
+	set( OpenCV_INCLUDE_DIRS "" )
+	set( OpenCV_LIBS "" )
 
 	include( D://MyLibs//caffe-rely//caffe-builder-config.cmake )
 	set(OPENCV_DIR "D:\\MyLibs\\opencv2_4_13"  CACHE PATH "")
@@ -80,12 +83,13 @@ if( MSVC )
 	set( OCR_TRAINING_INCLUDE ${Caffe_INCLUDE_DIRS};${OpenCV_INCLUDE_DIRS})
 	set( OCR_TRAINING_DEFINITION _WINDOWS CPU_ONLY USE_OPENCV USE_LMDB USE_LEVELDB)
 
+	add_subdirectory( src src_build )
+	add_subdirectory( test test_build )
+
 #add_definitions( ${Caffe_DEFINITIONS} )
 #include_directories( ${Caffe_INCLUDE_DIRS} )
 #link_libraries( ${Caffe_LIBRARIES} )
 #link_libraries( ${OpenCV_LIBS} )
-
-	add_subdirectory( src src_build )
 
 #set( CMAKE_INSTALL_PREFIX ${CMAKE_BINARY_DIR}/install )
 

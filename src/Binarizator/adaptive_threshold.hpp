@@ -3,8 +3,9 @@
 
 #include "../binarizator.hpp"
 #include <opencv2/opencv.hpp>
+#include "../config.hpp"
 
-class AdaThre : public Binarizator
+class OCRAPI AdaThre : public Binarizator
 {
 	private:
 		double max_value_;

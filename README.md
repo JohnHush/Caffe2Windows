@@ -6,6 +6,12 @@
 * 生成两个lib，一个OCR_PREDICT，一个是OCR_TRAIN，其中OCR_PREDICT是在Visual Studio 2010中生成的，并且没有调用Caffe的库，只调用了OpenCV 2.4.6， OpenBLAS和protobuf，当然这三个依赖库是MSVC2010的版本；另一个lib，OCR_TRAIN是在Visual Studio 2015 上编译的，同时依赖Caffe库；
 * 整个项目还要包括若干个测试程序，它们都放在./test文件夹中，还有若干个工具程序，它们都放在./tools
 * 整个项目准备支持Window, Linux和MacOS三个系统，主要在文件读写方面会有一些出入
+
+## 若干MSVC下操蛋的事
+在使用Microsoft Visual Studio C++时要特别注意MSVC的版本，我们现在使用的是VS2010和VS2015。
+* 使用openblas时，可能会报MSB4030错误，提示LNK GenerateDebugInformation参数是无效值。解决方案是： “属性——配置属性——链接器——调试”中 “生成调试信息”选择“否”！
+* 使用openblas时，VS2010 fatal error LNK1123: 转换到 COFF 期间失败；解决方案是：将 项目|项目属性|配置属性|连接器|清单文件|嵌入清单 “是”改为“否”！
+* 在使用openblas时，在release模式下可能出现出现"0x00905a4d 处未处理的异常，但是在debug模式下并没有，解决方案是： 在release版本下面使用"保留未引用数据(/OPT:NOREF)"选项！
 ##  Overview
 
 The purpose of this project is to automatically identify the hand-writing digits, Notice that this project only does one single thing! 

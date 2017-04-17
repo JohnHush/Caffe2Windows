@@ -6,7 +6,13 @@
 #include <algorithm>
 #include <cblas.h>
 #include <string>
-#include "caffe/caffe.hpp"
+
+#ifdef BUILD_OCR_PREDICT
+#include "caffe.pb.h"
+#else
+#include <caffe/proto/caffe.pb.h>
+#endif
+
 #include "util.hpp"
 #include "config.hpp"
 #include <leveldb/db.h>

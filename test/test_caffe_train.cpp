@@ -1,4 +1,4 @@
-//#include "caffe/proto/caffe.pb.h"
+#include <caffe/proto/caffe.pb.h>
 #include <opencv2/opencv.hpp>
 #include <iostream>
 #include <string>
@@ -6,6 +6,8 @@
 #include <fstream>
 #include <fcntl.h>
 #include "util_caffe.hpp"
+#include "Binarizator/adaptive_threshold.hpp"
+#include "tools_classifier.hpp"
 
 using namespace std;
 //using namespace caffe;

@@ -10,8 +10,14 @@
 #include <glog/logging.h>
 #include <leveldb/db.h>
 #include <leveldb/write_batch.h>
-#include "caffe/proto/caffe.pb.h"
 #include "util.hpp"
+#include <caffe/caffe.hpp>
+
+#ifdef BUILD_OCR_PREDICT
+#include "caffe.pb.h"
+#else
+#include <caffe/proto/caffe.pb.h>
+#endif
 
 using std::cout;
 using std::endl;
