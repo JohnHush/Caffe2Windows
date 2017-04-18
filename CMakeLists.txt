@@ -85,6 +85,7 @@ if( MSVC )
 
 	add_subdirectory( src src_build )
 	add_subdirectory( test test_build )
+	add_subdirectory( tools tools_build )
 
 #add_definitions( ${Caffe_DEFINITIONS} )
 #include_directories( ${Caffe_INCLUDE_DIRS} )

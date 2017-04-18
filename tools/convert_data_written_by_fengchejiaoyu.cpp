@@ -25,8 +25,13 @@ for ( int index_img = 1 ; index_img < 23 ; index_img++ )
 	string index_num = stream.str();
 	if ( index_img < 10 )
 		index_num = string("0") + index_num;
+#ifdef UNIX
 	string IMG_NAME = "/home/pitaloveu/orion-eye/finetune_data_withoutBOX/Page00" + index_num + ".jpg";
-//	string IMG_NAME( "/home/pitaloveu/Caffe2Windows/finetune_data_withoutBOX/Page0015.jpg" );
+#endif
+#ifdef _WINDOWS
+	string IMG_NAME = "D:\\MyProjects\\orion-eye\\finetune_data_withoutBOX\\Page00" + index_num + ".jpg";
+#endif
+//	string IMG_NAME( "/home/pitaloveu/Caffe2Windows/finetune_data_withoutBOX\\Page0015.jpg" );
 	IplImage * imgSrc = cvLoadImage( IMG_NAME.c_str() , CV_LOAD_IMAGE_GRAYSCALE );
 
 	int width = imgSrc->width;
@@ -278,7 +283,12 @@ if ( false ){
 	delete db;
 }
 scoped_ptr<db::DB> db(db::GetDB(string("leveldb")));
+#ifdef _WINDOWS
+db->Open( "D:\\MyProjects\\orion-eye\\finetune_data_withoutBOX\\finetune_training_data_leveldb" , db::NEW);
+#endif
+#ifdef UNIX
 db->Open( "/home/pitaloveu/orion-eye/finetune_data_withoutBOX/finetune_training_data_leveldb" , db::NEW);
+#endif
 scoped_ptr<db::Transaction> txn(db->NewTransaction());
 
 Datum datum;
@@ -298,7 +308,12 @@ txn->Put(key_str, value);
 txn->Commit();
 db->Close();
 
+#ifdef _WINDOWS
+db->Open( "D:\\MyProjects\\orion-eye\\finetune_data_withoutBOX\\finetune_testing_data_leveldb" , db::NEW);
+#endif
+#ifdef UNIX
 db->Open( "/home/pitaloveu/orion-eye/finetune_data_withoutBOX/finetune_testing_data_leveldb" , db::NEW);
+#endif
 scoped_ptr<db::Transaction> txn2(db->NewTransaction());
 
 Datum datum2;

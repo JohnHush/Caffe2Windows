@@ -19,6 +19,11 @@ list( APPEND SRC_LIST_OCRTRAIN_LIB  tools_classifier.cpp util.cpp )
 list( APPEND SRC_LIST_OCRTRAIN_LIB Binarizator/adaptive_threshold.cpp )
 list( APPEND SRC_LIST_OCRTRAIN_LIB Boxdetector/line_box_detector.cpp )
 list( APPEND SRC_LIST_OCRTRAIN_LIB Classifier/Mixed_Gaussian_Classifier.cpp )
+list( APPEND SRC_LIST_OCRTRAIN_LIB HandWritingDigitsRecognitionSystem.h util_caffe.hpp )
+list( APPEND SRC_LIST_OCRTRAIN_LIB  tools_classifier.hpp util.hpp )
+list( APPEND SRC_LIST_OCRTRAIN_LIB Binarizator/adaptive_threshold.hpp )
+list( APPEND SRC_LIST_OCRTRAIN_LIB Boxdetector/line_box_detector.hpp )
+list( APPEND SRC_LIST_OCRTRAIN_LIB Classifier/Mixed_Gaussian_Classifier.hpp )
 
 add_library( OCR_TRAIN SHARED ${SRC_LIST_OCRTRAIN_LIB})
 

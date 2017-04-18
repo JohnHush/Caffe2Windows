@@ -24,8 +24,12 @@ using std::pair;
 OCRAPI vector<float> compute_score_by_caffe( const IplImage * imgSrc , const  string & deploy_model , const  string & caffe_model );
 // compute the score using caffe library, use its forward() function in Net
 
-OCRAPI void finetune_by_caffe( const string & pretrained_model , const string & train_net_arch_prototxt , const IplImage *     imgSrc , const int label );
+OCRAPI void finetune_by_caffe( const string & pretrained_model , const string & train_net_arch_prototxt , const IplImage * imgSrc , const int label );
 // finetune a pre-trained model using caffe lib
+
+OCRAPI void finetune_by_caffe_leveldb(const string & pretrained_model, const string & train_net_arch_prototxt, 
+												vector<IplImage*> & imgs, vector<int> & labels , const string & base_db );
+// finetune a pre-trained model using caffe lib based on a base leveldb;
 
 OCRAPI void getback_to_ORIGINAL_MODEL( const string & pretrained_model , const string & ori_model );
 //in case the trained model is unable to use because of bad data.

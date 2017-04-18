@@ -58,10 +58,10 @@ float prior_pro_2d( pair<float , float> & x , pair<float, float> & miu , MAT2D &
 void feature_exp( vector< pair<float , float> > & features , pair<float , float> & miu );
 void feature_cov( vector< pair<float , float> > & features , MAT2D & sigma );
 
-bool sort_area( const pair<CvRect , double > & feature1 , const pair<CvRect , double> & feature2 );
-bool sort_rect_area_pair_x( const pair<CvRect , double > & feature1 , const pair<CvRect , double> & feature2 );
-bool sort_rect_area_pair_y( const pair<CvRect , double > & feature1 , const pair<CvRect , double> & feature2 );
-void merging_box( CvRect & BBOX , const CvRect & ABOX );
+OCRAPI bool sort_area( const pair<CvRect , double > & feature1 , const pair<CvRect , double> & feature2 );
+OCRAPI bool sort_rect_area_pair_x( const pair<CvRect , double > & feature1 , const pair<CvRect , double> & feature2 );
+OCRAPI bool sort_rect_area_pair_y( const pair<CvRect , double > & feature1 , const pair<CvRect , double> & feature2 );
+OCRAPI void merging_box( CvRect & BBOX , const CvRect & ABOX );
 // merging the rectangular box from BBOX, adding ABOX
 
 #endif

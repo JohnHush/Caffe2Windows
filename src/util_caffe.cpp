@@ -104,7 +104,7 @@ void ldb_handler::showLastData()
 		float data_value = static_cast<float>(static_cast<uint8_t>( (datum.data()) [data_index]));
 		cvSetReal2D( img , irow , icol , data_value );
 	}
-	showImage( img , 10 , "LastImage" , 0 );
+	showImage( img , 10 , "LastImage" , 1000 );
 	cvReleaseImage( &img );
 
 	if ( pre_state == CLOSE )
@@ -179,6 +179,89 @@ vector<float> compute_score_by_caffe( const IplImage * imgSrc , const string & d
 		score[i] = output_data[i];
 
 	return score;
+}
+
+void finetune_by_caffe_leveldb(const string & pretrained_model, const string & train_net_arch_prototxt, 
+									vector<IplImage*> & imgs, vector<int> & labels , const string & base_db )
+{
+	using namespace caffe;
+
+	SolverParameter solver_param;
+
+	ldb_handler MyDBHandler(base_db);
+	MyDBHandler.resetDB();
+	MyDBHandler.addSomeData(imgs, labels);
+	MyDBHandler.closeDB();
+
+
+#ifdef UNIX
+	int MAXBUFSIZE = 1024;
+	int count;
+	char buf[MAXBUFSIZE];
+
+	count = readlink("/proc/self/exe", buf, MAXBUFSIZE);
+	if (count < 0 || count >= MAXBUFSIZE)
+		LOG(FATAL) << "size of the exe path wrong !" << std::endl;
+
+	string exePath(buf);
+	exePath = exePath.substr(0, exePath.rfind('/') + 1);
+	LOG(INFO) << exePath << std::endl;
+#endif
+
+#ifdef _WINDOWS
+	CHAR exeFullPath[MAX_PATH];
+	string exePath;
+	GetModuleFileNameA(NULL, exeFullPath, MAX_PATH);
+	exePath = exeFullPath;
+	exePath = exePath.substr(0, exePath.rfind('\\') + 1);
+#endif
+
+#ifdef APPLE
+	LOG(FATAL) << "implement the method here" << std::endl;
+#endif
+	const int iteration_times = 10;
+	stringstream ss;
+	string s_iteration_times;
+	ss << iteration_times;
+	ss >> s_iteration_times;
+
+	solver_param.set_net((exePath + train_net_arch_prototxt).c_str());
+	solver_param.add_test_iter(0);
+	solver_param.set_test_interval(500);
+	solver_param.set_base_lr(0.0001);
+	solver_param.set_momentum(0.9);
+	solver_param.set_momentum2(0.999);
+	solver_param.set_lr_policy("fixed");
+	solver_param.set_display(0);
+	solver_param.set_max_iter(iteration_times);
+	solver_param.set_snapshot(iteration_times);
+	solver_param.set_snapshot_prefix("retrained");
+	solver_param.set_type("Adam");
+	solver_param.set_solver_mode(SolverParameter::CPU);
+
+	string name_retrained_model_by_caffe(solver_param.snapshot_prefix() +
+		"_iter_" + s_iteration_times + ".caffemodel");
+
+	string name_retrained_solvestate_by_caffe(solver_param.snapshot_prefix() +
+		"_iter_" + s_iteration_times + ".solverstate");
+	
+	//	ReadSolverParamsFromTextFileOrDie( solver_prototxt , &solver_param);
+	solver_param.mutable_train_state()->set_level(0);
+	Caffe::set_mode(Caffe::CPU);
+	shared_ptr<caffe::Solver<float> >
+		solver(caffe::SolverRegistry<float>::CreateSolver(solver_param));
+	
+	solver->net()->CopyTrainedLayersFrom(exePath + pretrained_model);
+	
+	solver->Solve();
+
+	if (std::remove((exePath + pretrained_model).c_str()) != 0)
+		LOG(FATAL) << "cannot remove pretrained model for unknown reason!" << std::endl;
+	if (std::rename(name_retrained_model_by_caffe.c_str(), (exePath + pretrained_model).c_str()) != 0)
+		LOG(FATAL) << "unable to change the file name of the trained model for unknown reason!" << std::endl;
+	if (std::remove(name_retrained_solvestate_by_caffe.c_str()) != 0)
+		LOG(FATAL) << "unable to delete the solverstate file for unknown reason!" << std::endl;
+
 }
 
 void finetune_by_caffe( const string & pretrained_model , const string & train_net_arch_prototxt , const IplImage * imgSrc , const int label )

@@ -7,11 +7,27 @@ target_include_directories( test_predict PUBLIC ${OCR_PREDICTION_INCLUDE} )
 target_compile_definitions( test_predict PUBLIC ${OCR_PREDICTION_DEFINITION} )
 
 
+link_libraries(  ${OCR_TRAINING_LIB} OCR_TRAIN )
+include_directories( ${OCR_TRAINING_INCLUDE} )
+#add_definitions( ${OCR_TRAINING_DEFINITION} )
+
 add_executable( test_caffe_train test_caffe_train.cpp )
 
-target_link_libraries( test_caffe_train PUBLIC ${OCR_TRAINING_LIB} OCR_TRAIN)
-target_include_directories( test_caffe_train PUBLIC ${OCR_TRAINING_INCLUDE} )
+#target_link_libraries( test_caffe_train PUBLIC ${OCR_TRAINING_LIB} OCR_TRAIN)
+#target_include_directories( test_caffe_train PUBLIC ${OCR_TRAINING_INCLUDE} )
 target_compile_definitions( test_caffe_train PUBLIC ${OCR_TRAINING_DEFINITION} )
+
+add_executable( test_train_add_data_leveldb test_train_adding_data_2leveldb.cpp )
+
+#target_link_libraries( test_train_add_data_leveldb PUBLIC ${OCR_TRAINING_LIB} OCR_TRAIN)
+#target_include_directories( test_train_add_data_leveldb PUBLIC ${OCR_TRAINING_INCLUDE} )
+target_compile_definitions( test_train_add_data_leveldb PUBLIC ${OCR_TRAINING_DEFINITION} )
+
+add_executable( test_finetune_with_base_db  test_finetune_with_base_db.cpp )
+
+#target_link_libraries( test_train_add_data_leveldb PUBLIC ${OCR_TRAINING_LIB} OCR_TRAIN)
+#target_include_directories( test_train_add_data_leveldb PUBLIC ${OCR_TRAINING_INCLUDE} )
+target_compile_definitions( test_train_add_data_leveldb PUBLIC ${OCR_TRAINING_DEFINITION} )
 
 #add_executable( test_leveldb test_leveldb_read_write.cpp )
 
