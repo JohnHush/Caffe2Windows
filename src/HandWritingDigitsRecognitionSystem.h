@@ -9,6 +9,6 @@ using std::vector;
 
 OCRAPI void initPredictor( int BLOCK_SIZE=201 , double OFFSET=20 );
 OCRAPI void deletePredictor( );
-OCRAPI int looksLikeNumber( IplImage * imgSrc   , float & confidence , float red_pts_prec = 0.1 );
+OCRAPI int looksLikeNumber( IplImage * imgSrc, IplImage* imgOut , float & confidence , float red_pts_prec = 0.1 );
 
 #endif
