@@ -69,6 +69,8 @@ namespace jh
 		cvErode ( imgRed , imgRed , dilate_kernel1 );
 		cvDilate( imgRed , imgRed , dilate_kernel1 );
 
+		showImage(imgRed, 1., "red pixels in the image ");
+		showImage(imgBla, 1., "black pixels in the image ");
 #ifdef DEBUG
 		showImage(imgRed, 1., "red pixels in the image ");
 		showImage(imgBla, 1., "black pixels in the image ");
@@ -103,6 +105,8 @@ namespace jh
 				if (cvGetReal2D(imgBla, irow, icol) != 0 )
 					cvSetReal2D(imgRed, irow, icol, 0);
 
+		showImage(imgBla, 1, "the dilated boundary lines");
+		showImage(imgRed, 1, "the residual red points after filtered out the dilated boundary lines");
 #ifdef DEBUG
 		showImage(imgBla, 1, "the dilated boundary lines");
 		showImage(imgRed, 1, "the residual red points after filtered out the dilated boundary lines");

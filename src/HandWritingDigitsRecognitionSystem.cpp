@@ -170,7 +170,7 @@ void deletePredictor()
 	{
 		cvReleaseImage( &imgcolor );
 		confidence = 1;
-		return -1;
+		return -1 ;
 	}
 
 	for ( int irow = 0 ; irow < 280 ; ++ irow )

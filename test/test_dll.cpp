@@ -11,7 +11,7 @@ int main( int argc , char * argv[] )
 {
 	initPredictor();
 #ifdef _WINDOWS
-	IplImage * imgSrc2 = cvLoadImage( "C:\\handwriting\\20170418\\ShiBieLvGao\\6\\29267347_p.jpg" , CV_LOAD_IMAGE_GRAYSCALE );
+	IplImage * imgSrc2 = cvLoadImage( "C:\\handwriting\\20170419\\ShiBieLvGao\\4\\31824344_p.jpg" , CV_LOAD_IMAGE_GRAYSCALE );
 #endif
 #ifdef UNIX
 	IplImage * imgSrc = cvLoadImage( "/home/pitaloveu/orion-eye/test_data/color_5.jpg" , CV_LOAD_IMAGE_COLOR );
