@@ -10,11 +10,12 @@ using std::make_pair;
 
 namespace jh
 {
+
 	bool getRedPixelsInHSVRange2(IplImage * imgSrc, Binarizator & BINTOR, float red_pts_prec, IplImage * imgRst)
 	{
 		/*
-		* Using some kind of Binarizator to binarize the image
-		* usually choose adaptive thresholding defined in OpenCV
+		 * Using some kind of Binarizator to binarize the image
+		 * usually choose adaptive thresholding defined in OpenCV
 		*/
 		IplImage * imgBin = cvCreateImage(cvGetSize(imgSrc), 8, 1);
 		IplImage * imgRed = cvCreateImage(cvGetSize(imgSrc), 8, 1);

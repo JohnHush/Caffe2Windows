@@ -14,7 +14,7 @@ if ( UNIX )
 
 	set( OCR_PREDICTION_LIB ${OpenCV_LIBS};/usr/lib64/libopenblas.so;/usr/local/lib/libprotoc.so )
 	set( OCR_PREDICTION_INCLUDE ${OpenCV_INCLUDE_DIRS};/usr/include/openblas )
-	set( OCR_PREDICTION_DEFINITION UNIX )
+	set( OCR_PREDICTION_DEFINITION UNIX BUILD_OCR_PREDICT)
 
 	set( OCR_TRAINING_LIB ${Caffe_LIBRARIES};${OpenCV_LIBS};/usr/lib64/libopenblas.so;/usr/local/lib/libprotoc.so )
 	set( OCR_TRAINING_INCLUDE /usr/include/openblas;${Caffe_INCLUDE_DIRS};${OpenCV_INCLUDE_DIRS})

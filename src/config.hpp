@@ -11,6 +11,9 @@
 
 // system file operation function include file
 #ifdef _WINDOWS
+// silent the min & max fun. in windows.h
+#define NOMINMAX
+#define NO_STRICT
 #include <windows.h>
 #endif
 

@@ -1,5 +1,3 @@
-#define NOMINMAX
-#define NO_STRICT
 #include "HandWritingDigitsRecognitionSystem.h"
 
 #ifdef BUILD_OCR_PREDICT
