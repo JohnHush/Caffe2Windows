@@ -1,5 +1,4 @@
-#define NOMINMAX
-#define NO_STRICT
+#include "config.hpp"
 #include "HandWritingDigitsRecognitionSystem.h"
 #include <opencv2/opencv.hpp>
 #include <iostream>
@@ -14,9 +13,8 @@ int main( int argc , char * argv[] )
 	IplImage * imgSrc2 = cvLoadImage( "C:\\handwriting\\20170419\\ShiBieLvGao\\4\\31824344_p.jpg" , CV_LOAD_IMAGE_GRAYSCALE );
 #endif
 #ifdef UNIX
-	IplImage * imgSrc = cvLoadImage( "/home/pitaloveu/orion-eye/test_data/color_5.jpg" , CV_LOAD_IMAGE_COLOR );
+	IplImage * imgSrc2 = cvLoadImage( "/home/pitaloveu/orion-eye/test_data/color_5.jpg" , CV_LOAD_IMAGE_COLOR );
 #endif
-
 	
 	IplImage * imgSrc = cvCreateImage(cvSize(28, 28), 8, 1);
 	

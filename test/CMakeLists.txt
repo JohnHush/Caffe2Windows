@@ -47,4 +47,3 @@ target_compile_definitions( test_train_add_data_leveldb PUBLIC ${OCR_TRAINING_DE
 #target_include_directories( test_leveldb PUBLIC ${OCR_TRAINING_INCLUDE} )
 #target_compile_definitions( test_leveldb PUBLIC ${OCR_TRAINING_DEFINITION} )
 
-endif()
