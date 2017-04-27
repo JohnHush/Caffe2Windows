@@ -17,6 +17,18 @@ target_include_directories( test_Windows_data2_LMDB PUBLIC ${OCR_TRAINING_INCLUD
 target_compile_definitions( test_Windows_data2_LMDB PUBLIC ${OCR_TRAINING_DEFINITION} )
 
 
+add_executable( test_train_add_data_leveldb test_train_adding_data_2leveldb.cpp )
+
+target_link_libraries( test_train_add_data_leveldb PUBLIC ${OCR_TRAINING_LIB} OCR_TRAIN)
+target_include_directories( test_train_add_data_leveldb PUBLIC ${OCR_TRAINING_INCLUDE} )
+target_compile_definitions( test_train_add_data_leveldb PUBLIC ${OCR_TRAINING_DEFINITION} )
+
+add_executable( test_finetune_with_WINDOWS_labeled_data test_finetune_with_WINDOWS_labeled_data.cpp )
+
+target_link_libraries( test_finetune_with_WINDOWS_labeled_data PUBLIC ${OCR_TRAINING_LIB} OCR_TRAIN)
+target_include_directories( test_finetune_with_WINDOWS_labeled_data PUBLIC ${OCR_TRAINING_INCLUDE} )
+target_compile_definitions( test_finetune_with_WINDOWS_labeled_data PUBLIC ${OCR_TRAINING_DEFINITION} )
+
 if( FALSE)
 link_libraries(  ${OCR_TRAINING_LIB} OCR_TRAIN )
 include_directories( ${OCR_TRAINING_INCLUDE} )
@@ -28,11 +40,6 @@ add_executable( test_caffe_train test_caffe_train.cpp )
 #target_include_directories( test_caffe_train PUBLIC ${OCR_TRAINING_INCLUDE} )
 target_compile_definitions( test_caffe_train PUBLIC ${OCR_TRAINING_DEFINITION} )
 
-add_executable( test_train_add_data_leveldb test_train_adding_data_2leveldb.cpp )
-
-#target_link_libraries( test_train_add_data_leveldb PUBLIC ${OCR_TRAINING_LIB} OCR_TRAIN)
-#target_include_directories( test_train_add_data_leveldb PUBLIC ${OCR_TRAINING_INCLUDE} )
-target_compile_definitions( test_train_add_data_leveldb PUBLIC ${OCR_TRAINING_DEFINITION} )
 
 add_executable( test_finetune_with_base_db  test_finetune_with_base_db.cpp )
 
@@ -46,4 +53,4 @@ target_compile_definitions( test_train_add_data_leveldb PUBLIC ${OCR_TRAINING_DE
 #target_link_libraries( test_leveldb PUBLIC ${OCR_TRAINING_LIB} OCR_TRAIN)
 #target_include_directories( test_leveldb PUBLIC ${OCR_TRAINING_INCLUDE} )
 #target_compile_definitions( test_leveldb PUBLIC ${OCR_TRAINING_DEFINITION} )
-
+endif()

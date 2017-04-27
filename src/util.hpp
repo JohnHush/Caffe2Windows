@@ -23,6 +23,7 @@ using std::string;
 using std::vector;
 using std::pair;
 
+void OCRAPI showImageMat(const cv::Mat & imgSrc, const float ratio, const string & windowName, const int waitingTime);
 void OCRAPI showImage( const IplImage * imgSrc , const float ratio , const string & windowName , const int waitingTime = 0 );
 
 typedef struct MAT2D

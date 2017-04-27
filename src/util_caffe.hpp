@@ -16,6 +16,7 @@
 #include "util.hpp"
 #include "config.hpp"
 #include <leveldb/db.h>
+class ldb_handler;
 
 using std::string;
 using std::vector;
@@ -23,6 +24,7 @@ using std::pair;
 
 #ifdef _WINDOWS
 OCRAPI void read_Windows_Data2_LevelDB(string data_path, string lmdb_path);
+OCRAPI void read_Windows_Data2_Existing_LevelDB(string data_path, ldb_handler & HANDLER);
 OCRAPI int getAllImages(vector< pair<string, int> > & imgName, string path, int LABEL = -1);
 #endif
 
@@ -33,8 +35,12 @@ OCRAPI void finetune_by_caffe( const string & pretrained_model , const string & 
 // finetune a pre-trained model using caffe lib
 
 OCRAPI void finetune_by_caffe_leveldb(const string & pretrained_model, const string & train_net_arch_prototxt, 
-												vector<IplImage*> & imgs, vector<int> & labels , const string & base_db );
+												vector<cv::Mat> & imgs, vector<int> & labels , const string & base_db );
 // finetune a pre-trained model using caffe lib based on a base leveldb;
+
+OCRAPI void finetune_with_Existing_LevelDB( const string & pretrained_model, const string & train_net_arch_prototxt );
+
+// we have processed the training db from labeled WINDOWS images, here just finetune.
 
 OCRAPI void getback_to_ORIGINAL_MODEL( const string & pretrained_model , const string & ori_model );
 //in case the trained model is unable to use because of bad data.
@@ -48,9 +54,11 @@ class OCRAPI ldb_handler
 		explicit ldb_handler( const string & db_name );
 		// the level db should exist or it will cause error
 		void closeDB();
-		void addSomeData( vector<IplImage *> & imgAdds , vector<int> & labels );
+		void addSomeData( vector<cv::Mat> & imgAdds , vector<int> & labels );
 		void resetDB();
 		void showLastData();
+		void splitDB( string & training_set , string & test_set );
+		// split the database into training set and validation set
 	private:
 		leveldb::DB * db_;
 		// the processed database pointer
@@ -61,7 +69,7 @@ class OCRAPI ldb_handler
 		string db_name_;
 		DB_OPEN_OR_NOT state_;
 		// calculate the input elements' number
-		void addData( IplImage * imgAdd , int label , int key_index );
+		void addData(cv::Mat & imgAdd , int label , int key_index );
 		static int BASE_NUMBER_;
 };
 

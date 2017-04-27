@@ -44,9 +44,14 @@ int main( int argc , char * argv[] )
 
 	deletePredictor();
 
-	read_Windows_Data2_LevelDB("C:\\Users\\JohnHush\\Desktop\\finetune_data", "C:\\Users\\JohnHush\\Desktop\\finetune_data\\FINETUNE_DATA_DB" );
+	ldb_handler HANDLER("D:\\MyProjects\\orion-eye\\base_data\\finetune_training_data_leveldb");
+	read_Windows_Data2_Existing_LevelDB("C:\\Users\\JohnHush\\Desktop\\finetune_data",  HANDLER );
 
-
+	HANDLER.showLastData();
+	HANDLER.splitDB(string("D:\\MyProjects\\orion-eye\\base_data\\TRAINING_FINETUNE"),
+		string("D:\\MyProjects\\orion-eye\\base_data\\TESTING_FINETUNE"));
+	HANDLER.resetDB();
+	HANDLER.closeDB();
 	char s;
 
 	std::cin >> s;

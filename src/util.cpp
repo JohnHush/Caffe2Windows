@@ -9,6 +9,31 @@
 using std::cout;
 using std::endl;
 
+
+void showImageMat(const cv::Mat & imgSrc, const float ratio, const string & windowName, const int waitingTime)
+{
+//	int width = int(imgSrc->width  * ratio);
+//	int heigh = int(imgSrc->height * ratio);
+
+//	IplImage * imgRst = cvCreateImage(cvSize(width, heigh), imgSrc->depth, imgSrc->nChannels);
+//	cvResize(imgSrc, imgRst);
+
+	cv::Mat imgRst;
+	cv::resize( imgSrc , imgRst , cv::Size(0,0) , ratio , ratio );
+	cv::imshow( windowName , imgRst );
+
+//	cvNamedWindow(windowName.c_str());
+//	cvShowImage(windowName.c_str(), imgRst);
+	if (waitingTime == 0)
+		//		cvWaitKey();
+		cv::waitKey();
+	else
+		//cvWaitKey(waitingTime);
+		cv::waitKey(waitingTime);
+
+//	cvReleaseImage(&imgRst);
+}
+
 void showImage( const IplImage * imgSrc , const float ratio , const string & windowName , const int waitingTime )
 {
 	int width = int(imgSrc->width  * ratio);
