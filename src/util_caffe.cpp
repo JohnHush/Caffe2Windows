@@ -12,6 +12,9 @@
 #include <leveldb/write_batch.h>
 #include "util.hpp"
 #include <caffe/caffe.hpp>
+#ifdef _WINDOWS
+#include <io.h>
+#endif
 
 #ifdef BUILD_OCR_PREDICT
 #include "caffe.pb.h"
@@ -21,6 +24,129 @@
 
 using std::cout;
 using std::endl;
+
+#ifdef _WINDOWS
+int getAllImages(vector< pair<string, int> > & imgName, string path, int LABEL)
+{
+	struct _finddata_t fileinfo;
+	long handle;
+	string target;
+	string s_tmp;
+
+	if (path.size() > 1 && path.back() != '\\')
+		target = path + '\\';
+
+	target += "*.*";
+
+	handle = _findfirst(target.c_str(), &fileinfo);
+	int count = 0;
+
+	if (handle == -1) return count;
+	int label;
+	do
+	{
+		if (LABEL == -1 && strcmp(fileinfo.name, ".") != 0 &&
+			strcmp(fileinfo.name, "..") != 0 && (fileinfo.attrib &  _A_SUBDIR))
+		{
+			if (strlen(fileinfo.name) == 1 && fileinfo.name[0] >= '0' && fileinfo.name[0] <= '9')
+				label = fileinfo.name[0] - '0';
+			else
+				label = -1;
+
+			count += getAllImages(imgName, s_tmp.assign(path).append("\\").append(fileinfo.name), label);
+		}
+		if (LABEL != -1 && strcmp(fileinfo.name, ".") != 0 &&
+			strcmp(fileinfo.name, "..") != 0 && !(fileinfo.attrib &  _A_SUBDIR))
+		{
+			int tmp = LABEL;
+			if (strlen(fileinfo.name) >= 5 &&
+				fileinfo.name[strlen(fileinfo.name) - 1] == 'g' &&
+				fileinfo.name[strlen(fileinfo.name) - 2] == 'p' &&
+				fileinfo.name[strlen(fileinfo.name) - 3] == 'j' &&
+				fileinfo.name[strlen(fileinfo.name) - 4] == '.' &&
+				fileinfo.name[strlen(fileinfo.name) - 5] != 'p' &&
+				fileinfo.name[strlen(fileinfo.name) - 5] >= '0' &&
+				fileinfo.name[strlen(fileinfo.name) - 5] <= '9'
+				)
+				tmp = fileinfo.name[strlen(fileinfo.name) - 5] - '0';
+
+			count++;
+			imgName.push_back(std::make_pair(s_tmp.assign(path).append("\\").append(fileinfo.name), tmp));
+		}
+	} while (_findnext(handle, &fileinfo) == 0);
+
+	return count;
+}
+
+void read_Windows_Data2_LevelDB( string data_path , string lmdb_path )
+{
+	vector<pair<string, int> > imgName;
+
+	int count = getAllImages(imgName, data_path );
+
+	leveldb::DB* db;
+	leveldb::Options options;
+	leveldb::WriteOptions write_options;
+	leveldb::Status status;
+
+	options.create_if_missing = true;
+	options.error_if_exists = true;
+	write_options.sync = true;
+	status = leveldb::DB::Open(options, lmdb_path , &db);
+	if (!status.ok())
+		LOG(FATAL) << "can't open the db " << endl;
+
+	leveldb::WriteBatch* batch = NULL;
+	batch = new leveldb::WriteBatch();
+
+	char * pixels = new char[28 * 28];
+	char label;
+
+	string value;
+	char key_cstr[10];
+	count = 0;
+
+	caffe::Datum datum;
+	datum.set_channels(1);
+	datum.set_height(28);
+	datum.set_width(28);
+
+	for (int item_id = 0; item_id < imgName.size(); ++item_id)
+	{
+		cv::Mat imgMat = cv::imread(imgName[item_id].first, CV_LOAD_IMAGE_GRAYSCALE);
+
+		if (imgMat.size() != cv::Size(280, 280)) {
+			LOG(INFO) << "some unqualified image occured" << endl;
+			continue;
+		}
+		for (int irow = 0; irow < 28; irow++)
+			for (int icol = 0; icol < 28; icol++)
+				pixels[irow * 28 + icol] = imgMat.at<unsigned char>(irow * 10, icol * 10);
+
+		datum.set_data(pixels, 28 * 28);
+		datum.set_label(imgName[item_id].second);
+
+		datum.SerializeToString(&value);
+		snprintf(key_cstr, 10, "%08d", item_id);
+		string keystr(key_cstr);
+		batch->Put(keystr, value);
+
+		if (++count % 1000 == 0)
+		{
+			db->Write(write_options, batch);
+			delete batch;
+			batch = new leveldb::WriteBatch();
+		}
+	}
+	if (count % 1000 != 0)
+	{
+		db->Write(write_options, batch);
+		delete batch;
+		delete db;
+	}
+	delete[] pixels;
+}
+#endif
 
 int ldb_handler::BASE_NUMBER_;
 

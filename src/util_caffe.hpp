@@ -21,6 +21,11 @@ using std::string;
 using std::vector;
 using std::pair;
 
+#ifdef _WINDOWS
+OCRAPI void read_Windows_Data2_LevelDB(string data_path, string lmdb_path);
+OCRAPI int getAllImages(vector< pair<string, int> > & imgName, string path, int LABEL = -1);
+#endif
+
 OCRAPI vector<float> compute_score_by_caffe( const IplImage * imgSrc , const  string & deploy_model , const  string & caffe_model );
 // compute the score using caffe library, use its forward() function in Net
 
