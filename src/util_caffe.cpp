@@ -223,17 +223,21 @@ void ldb_handler::splitDB(string & training_set, string & test_set)
 	int count = 0;
 	for (it_->SeekToFirst(); it_->Valid(); it_->Next())
 	{		
-		string value;
-		status_SPLIT = db_->Get( leveldb::ReadOptions() , it_->key().ToString() , & value );
-		if (status_SPLIT.ok())
-		{
-			if (rand() % 100 >= 20)
-				db1->Put(leveldb::WriteOptions(), it_->key().ToString() , value );
-				//db1->Put(leveldb::WriteOptions(), it_->key(), it_->value().ToString());
-			else
-				db2->Put(leveldb::WriteOptions(), it_->key().ToString(), value);
-				//db2->Put(leveldb::WriteOptions(), it_->key(), it_->value().ToString());
-		}
+		//string value;
+		//status_SPLIT = db_->Get( leveldb::ReadOptions() , it_->key().ToString() , & value );
+		//if (status_SPLIT.ok())
+		//{
+		//	if (rand() % 100 >= 20)
+		//		db1->Put(leveldb::WriteOptions(), it_->key().ToString() , value );
+		//		//db1->Put(leveldb::WriteOptions(), it_->key(), it_->value().ToString());
+		//	else
+		//		db2->Put(leveldb::WriteOptions(), it_->key().ToString(), value);
+		//		//db2->Put(leveldb::WriteOptions(), it_->key(), it_->value().ToString());
+		//}
+		if (rand() % 100 >= 20)
+			db1->Put( leveldb::WriteOptions() , it_->key() , it_->value() );
+		else
+			db2->Put( leveldb::WriteOptions() , it_->key() , it_->value() );
 //		db_KEYS.push_back( it_->key().ToString() );
 
 	}

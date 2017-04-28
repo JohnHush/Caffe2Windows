@@ -10,7 +10,7 @@ int main( int argc , char * argv[] )
 {
 	initPredictor();
 #ifdef _WINDOWS
-	IplImage * imgSrc2 = cvLoadImage( "C:\\handwriting\\20170419\\ShiBieLvGao\\4\\31824344_p.jpg" , CV_LOAD_IMAGE_GRAYSCALE );
+	IplImage * imgSrc2 = cvLoadImage( "C:\\Users\\JohnHush\\Desktop\\finetune_data\\0\\0.52__2308752_p__5.jpg" , CV_LOAD_IMAGE_GRAYSCALE );
 #endif
 #ifdef UNIX
 	IplImage * imgSrc2 = cvLoadImage( "/home/pitaloveu/orion-eye/test_data/color_5.jpg" , CV_LOAD_IMAGE_COLOR );
@@ -27,7 +27,7 @@ int main( int argc , char * argv[] )
 //	IplImage * imgOut = cvCreateImage( cvSize(280 , 280) , 8 , 1 );
 //	cvSetZero( imgOut );
 	
-	std::fstream input( "D:\\MyProjects\\orion-eye\\lenet_FINETUNE.caffemodel" , std::ios::in | std::ios::binary );
+	std::fstream input( "D:\\MyProjects\\orion-eye\\build\\test_build\\Debug\\lenet_FINETUNE.caffemodel" , std::ios::in | std::ios::binary );
 //	int index = looksLikeNumber( imgSrc , imgOut , confidence );
 
 	caffe::NetParameter netP;
