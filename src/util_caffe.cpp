@@ -25,6 +25,123 @@
 using std::cout;
 using std::endl;
 
+void rotate_leveldb(string & db_pathin, string & db_pathout, int angle)
+{
+	leveldb::DB* db_in;
+	leveldb::DB* db_out;
+	leveldb::Options options_in , options_out;
+	leveldb::Status status;
+
+	options_in.create_if_missing = false;
+	options_in.error_if_exists = false;
+	options_out.create_if_missing = true;
+	options_out.error_if_exists = true;
+
+	status = leveldb::DB::Open( options_in , db_pathin , &db_in );
+	if (!status.ok()) LOG(FATAL) << "cannot open the db " << endl;
+	status = leveldb::DB::Open( options_out , db_pathout , &db_out );
+	if (!status.ok()) LOG(FATAL) << "cannot open the db " << endl;
+
+	leveldb::Iterator * it = db_in->NewIterator(leveldb::ReadOptions());
+
+	cv::Mat img( 28 , 28 , CV_8UC1 );
+	cv::Mat img_out( 28 , 28 , CV_8UC1 );
+	caffe::Datum datum;
+	char * pixels = new char[28 * 28];
+	string value;
+	char key_cstr[10];
+	int count = 0;
+
+	for (it->SeekToFirst(); it->Valid(); it->Next())
+	{
+		datum.ParseFromString(it->value().ToString());
+		int label = datum.label();
+		for (int irow = 0; irow < 28; irow++)
+			for (int icol = 0; icol < 28; icol++)
+				img.at<uchar>(irow, icol) = static_cast<uchar>(static_cast<uint8_t>((datum.data())[irow*28 +icol]));
+
+		for (int iangle = -angle; iangle < angle; iangle++)
+		{
+			cv::Mat map_matrix = cv::getRotationMatrix2D(cv::Point2f(14, 14), iangle , 1. );
+			cv::warpAffine( img , img_out , map_matrix , cv::Size(28,28) );
+			datum.clear_data();
+			datum.clear_label();
+
+			for (int irow = 0; irow < 28; irow++)
+				for (int icol = 0; icol < 28; icol++)
+					pixels[irow * 28 + icol] = img_out.at<uchar>(irow , icol );
+
+			datum.set_data(pixels, 28 * 28);
+			datum.set_label( label );
+			datum.SerializeToString(&value);
+
+			snprintf(key_cstr, 10, "%08d", count );
+			string keystr(key_cstr);
+			db_out->Put(leveldb::WriteOptions() , keystr, value);
+
+			count++;
+
+			/*if (++count % 10 == 0)
+				showImageMat(img_out, 10, key_cstr , 1000);*/
+		}
+		
+	}
+
+	//cout << "count = " << count << endl;
+	delete it;
+	delete db_in;
+	delete db_out;
+
+}
+
+void merge_data_and_split(vector<string> & db_paths, string & training_path, string & testing_path)
+// amount of training set and testing set ratio is 4:1 
+{
+	leveldb::DB * db1;
+	leveldb::DB * db2;
+	leveldb::Options options_SPLIT;
+	leveldb::Status status_SPLIT;
+	options_SPLIT.create_if_missing = true;
+	options_SPLIT.error_if_exists = true;
+
+	status_SPLIT = leveldb::DB::Open(options_SPLIT, training_path, &db1 );
+	if (!status_SPLIT.ok())	LOG(FATAL) << "cannot ok the db for some unknown reasons" << endl;
+	status_SPLIT = leveldb::DB::Open(options_SPLIT, testing_path, &db2 );
+	if (!status_SPLIT.ok())	LOG(FATAL) << "cannot ok the db for some unknown reasons" << endl;
+
+
+	leveldb::Options options;
+//	leveldb::WriteOptions write_options;
+	leveldb::Status status;
+
+	options.create_if_missing = false;
+	options.error_if_exists = false;
+
+	for (int index = 0; index < db_paths.size(); ++index)
+	{
+		leveldb::DB* db;
+		status = leveldb::DB::Open(options, db_paths[index] , &db);
+		if (!status.ok())
+			LOG(FATAL) << "can't open the db " << endl;
+		leveldb::Iterator * it = db->NewIterator(leveldb::ReadOptions());
+
+		for (it->SeekToFirst(); it->Valid(); it->Next())
+		{
+			if (rand() % 100 >= 20)
+				db1->Put(leveldb::WriteOptions(), it->key(), it->value());
+			else
+				db2->Put(leveldb::WriteOptions(), it->key(), it->value());
+		}
+
+		delete it;
+		delete db;
+	}
+
+	delete db1;
+	delete db2;
+
+}
+
 #ifdef _WINDOWS
 int getAllImages(vector< pair<string, int> > & imgName, string path, int LABEL)
 {
@@ -448,16 +565,17 @@ void finetune_with_Existing_LevelDB(const string & pretrained_model, const strin
 #ifdef APPLE
 	LOG(FATAL) << "implement the method here" << std::endl;
 #endif
-	const int iteration_times = 100;
+	const int iteration_times = 2000;
 	stringstream ss;
 	string s_iteration_times;
 	ss << iteration_times;
 	ss >> s_iteration_times;
 
 	solver_param.set_net((exePath + train_net_arch_prototxt).c_str());
+	solver_param.set_iter_size(10);
 	solver_param.add_test_iter(10);
 	solver_param.set_test_interval(10);
-	solver_param.set_base_lr(0.0001);
+	solver_param.set_base_lr(0.001);
 	solver_param.set_momentum(0.9);
 	solver_param.set_momentum2(0.999);
 	solver_param.set_lr_policy("fixed");

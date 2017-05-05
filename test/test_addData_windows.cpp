@@ -52,6 +52,8 @@ int main( int argc , char * argv[] )
 		string("D:\\MyProjects\\orion-eye\\base_data\\TESTING_FINETUNE"));
 	HANDLER.resetDB();
 	HANDLER.closeDB();
+
+
 	char s;
 
 	std::cin >> s;

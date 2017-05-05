@@ -28,6 +28,8 @@ OCRAPI void read_Windows_Data2_Existing_LevelDB(string data_path, ldb_handler & 
 OCRAPI int getAllImages(vector< pair<string, int> > & imgName, string path, int LABEL = -1);
 #endif
 
+OCRAPI void rotate_leveldb( string & db_in , string & db_out , int angle );
+OCRAPI void merge_data_and_split( vector<string> & db_paths , string & training_path , string & testing_path );
 OCRAPI vector<float> compute_score_by_caffe( const IplImage * imgSrc , const  string & deploy_model , const  string & caffe_model );
 // compute the score using caffe library, use its forward() function in Net
 
