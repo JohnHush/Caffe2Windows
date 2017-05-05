@@ -1,11 +1,14 @@
+#ifndef __JohnHush_HANDWRITINGDIGITSRECOGNITIONSYSTEM_H
+#define __JohnHush_HANDWRITINGDIGITSRECOGNITIONSYSTEM_H
+
 #include <opencv2/opencv.hpp>
 #include <vector>
+#include "config.hpp"
+
 using std::vector;
 
-//void initPredictor( int BLOCK_SIZE=201 , double OFFSET=20 );
-//void deletePredictor();
-//int looksLikeNumber( IplImage * imgSrc   , float & confidence , float red_pts_prec = 0.1 );
+OCRAPI void initPredictor( int BLOCK_SIZE=201 , double OFFSET=20 );
+OCRAPI void deletePredictor( );
+OCRAPI int looksLikeNumber( IplImage * imgSrc, IplImage* imgOut , float & confidence , float red_pts_prec = 0.1 );
 
-extern __declspec(dllexport) void initPredictor( int BLOCK_SIZE=201 , double OFFSET=20 );
-extern __declspec(dllexport) void deletePredictor( );
-extern __declspec(dllexport) int looksLikeNumber( IplImage * imgSrc   , float & confidence , float red_pts_prec = 0.1 );
+#endif

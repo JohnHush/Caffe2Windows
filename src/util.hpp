@@ -1,19 +1,30 @@
 #ifndef __JohnHush_UTIL_H
 #define __JohnHush_UTIL_H
 
-#include "caffe/proto/caffe.pb.h"
+#define NOMINMAX
+#define NO_STRICT
+
+#ifdef BUILD_OCR_PREDICT
+#include "caffe.pb.h"
+#else
+#include <caffe/proto/caffe.pb.h>
+#endif
+
 #include <opencv2/opencv.hpp>
 #include <vector>
 #include <algorithm>
 #include <cblas.h>
 #include <string>
-#include "caffe/caffe.hpp"
+#include "config.hpp"
+//#include "caffe/caffe.hpp"
+//#include "caffe.pb.h"
 
 using std::string;
 using std::vector;
 using std::pair;
 
-void showImage( const IplImage * imgSrc , const float ratio , const string & windowName , const int waitingTime = 0 );
+void OCRAPI showImageMat(const cv::Mat & imgSrc, const float ratio, const string & windowName, const int waitingTime);
+void OCRAPI showImage( const IplImage * imgSrc , const float ratio , const string & windowName , const int waitingTime = 0 );
 
 typedef struct MAT2D
 {
@@ -38,7 +49,7 @@ template <typename Dtype>
 void im2col(const Dtype* data_im, const int channels, const int height, 
 				const int width, const int kernel_h, const int kernel_w, Dtype* data_col);
 
-void compute_score( IplImage * imgSrc , ::caffe::NetParameter & net , vector<float> & score );
+void OCRAPI compute_score( IplImage * imgSrc , ::caffe::NetParameter & net , vector<float> & score );
 
 template <typename T>
 int findMax( vector<T> & score );
@@ -48,16 +59,10 @@ float prior_pro_2d( pair<float , float> & x , pair<float, float> & miu , MAT2D &
 void feature_exp( vector< pair<float , float> > & features , pair<float , float> & miu );
 void feature_cov( vector< pair<float , float> > & features , MAT2D & sigma );
 
-bool sort_area( const pair<CvRect , double > & feature1 , const pair<CvRect , double> & feature2 );
-bool sort_rect_area_pair_x( const pair<CvRect , double > & feature1 , const pair<CvRect , double> & feature2 );
-bool sort_rect_area_pair_y( const pair<CvRect , double > & feature1 , const pair<CvRect , double> & feature2 );
-void merging_box( CvRect & BBOX , const CvRect & ABOX );
+OCRAPI bool sort_area( const pair<CvRect , double > & feature1 , const pair<CvRect , double> & feature2 );
+OCRAPI bool sort_rect_area_pair_x( const pair<CvRect , double > & feature1 , const pair<CvRect , double> & feature2 );
+OCRAPI bool sort_rect_area_pair_y( const pair<CvRect , double > & feature1 , const pair<CvRect , double> & feature2 );
+OCRAPI void merging_box( CvRect & BBOX , const CvRect & ABOX );
 // merging the rectangular box from BBOX, adding ABOX
-
-vector<float> compute_score_by_caffe( const IplImage * imgSrc , const  string & deploy_model , const  string & caffe_model );
-// compute the score using caffe library, use its forward() function in Net
-
-void finetune_by_caffe( const string & pretrained_model , const string & train_net_arch_prototxt , const IplImage *     imgSrc , const int label );
-// finetune a pre-trained model using caffe lib
 
 #endif
