@@ -23,7 +23,5 @@ ipch*
 *.filters
 *.opensdf
 
-SConstruct
 
-caffe.pb.h
-caffe.pb.cc
+build/

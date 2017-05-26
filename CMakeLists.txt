@@ -1,0 +1,48 @@
+cmake_minimum_required( VERSION 3.0 )
+
+project( TEST_IDENTIFY C CXX )
+
+option( DEFINE_DEBUG "if adding #define DEBUG in the program " OFF )
+if( DEFINE_DEBUG )
+	add_definitions( -DDEBUG )
+endif( DEFINE_DEBUG )
+
+if ( UNIX )
+	include( /home/pitaloveu/caffe/build/install/share/Caffe/CaffeConfig.cmake)
+	add_definitions( -DUNIX ${Caffe_DEFINITIONS} )
+	include_directories( ${Caffe_INCLUDE_DIRS} )
+	include_directories( BEFORE /usr/include/openblas )
+	link_libraries( ${Caffe_LIBRARIES} )
+	link_libraries( ${OpenCV_LIBS} )
+	link_libraries( /usr/lib64/libopenblas.so )
+	add_subdirectory( src src_build )
+endif()
+
+
+if ( APPLE )
+
+include( /Users/JohnHush/caffe/build/install/share/Caffe/CaffeConfig.cmake )
+add_definitions( -DAPPLE )
+add_subdirectory( src src_build )
+
+endif( APPLE )
+
+if( MSVC )
+	include( D://MyLibs//caffe-rely//caffe-builder-config.cmake )
+set(OPENCV_DIR "D:\\MyLibs\\opencv2_4_13"  CACHE PATH "")
+set(opencv_DIR "D:\\MyLibs\\opencv2_4_13"  CACHE PATH "")
+set(OpenCV_DIR "D:\\MyLibs\\opencv2_4_13"  CACHE PATH "")
+set(OpenCV_STATIC OFF CACHE BOOL "")
+
+	include( D://MyLibs//caffe//share//Caffe//CaffeConfig.cmake )
+
+add_definitions( -DMSVC ${Caffe_DEFINITIONS} )
+include_directories( ${Caffe_INCLUDE_DIRS} )
+link_libraries( ${Caffe_LIBRARIES} )
+link_libraries( ${OpenCV_LIBS} )
+add_subdirectory( src src_build )
+
+set( CMAKE_INSTALL_PREFIX ${CMAKE_BINARY_DIR}/install )
+
+endif()
+
