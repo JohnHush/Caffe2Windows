@@ -1,32 +1,26 @@
 #include "HandWritingDigitsRecognitionSystem.h"
 
-#include "caffe/proto/caffe.pb.h"
+#ifdef BUILD_OCR_PREDICT
+#include "caffe.pb.h"
+#else
+#include <caffe/proto/caffe.pb.h>
+#endif
+
 #include <opencv2/opencv.hpp>
-#include <google/protobuf/io/coded_stream.h>
-#include <google/protobuf/io/zero_copy_stream_impl.h>
 #include <iostream>
 #include <string>
 #include <vector>
 #include <fstream>
 #include <time.h>
-
-#ifdef MSVC
-#include <windows.h>
-#endif
-
-#ifdef APPLE
-#include <mach-o/dyld.h>
-#endif
-
-using namespace std;
-
+#include "config.hpp"
 #include <fcntl.h>
 #include "util.hpp"
 #include "Binarizator/adaptive_threshold.hpp"
 #include "Classifier/Mixed_Gaussian_Classifier.hpp"
 #include "tools_classifier.hpp"
 
-AdaThre * adapt_thresholder = nullptr;
+using namespace std;
+AdaThre * adapt_thresholder = NULL;
 
 float * imgData;
 float * imgData_col;
@@ -49,12 +43,25 @@ float * inner_b2;
 
 void initPredictor( int BLOCK_SIZE , double OFFSET  )
 {
-#ifdef MSVC
+#ifdef _WINDOWS
 	CHAR exeFullPath[MAX_PATH];
 	string strPath;
 	GetModuleFileNameA(NULL,exeFullPath,MAX_PATH);
 	strPath = exeFullPath;
 	strPath = strPath.substr( 0 , strPath.rfind('\\') +1 );
+#endif
+#ifdef UNIX
+	int MAXBUFSIZE = 1024;
+    int count;
+    char buf[MAXBUFSIZE];
+
+    count = readlink( "/proc/self/exe" , buf , MAXBUFSIZE );
+//    if ( count < 0 || count >= MAXBUFSIZE )
+//        LOG(FATAL) << "size of the exe path wrong !" << std::endl;
+
+    string strPath( buf );
+    strPath = strPath.substr( 0 , strPath.rfind( '/' ) + 1 );
+    //LOG(INFO) << strPath << std::endl;
 #endif
 
 #ifdef APPLE
@@ -67,7 +74,7 @@ void initPredictor( int BLOCK_SIZE , double OFFSET  )
     strPath = strPath.substr( 0 , strPath.rfind( '/' )+1 );
 #endif
 
-	string modStr = strPath + "lenet_iter_200.caffemodel";
+	string modStr = strPath + "lenet_FINETUNE.caffemodel";
 	caffe::NetParameter net;
 	fstream input( modStr , ios::in | ios::binary);
 	net.ParseFromIstream( &input );
@@ -145,19 +152,29 @@ void deletePredictor()
 	delete [] inner_b2;
 }
 
- int looksLikeNumber( IplImage * imgSrc   , float & confidence , float red_pts_prec  )
+ int looksLikeNumber( IplImage * imgSrc   , IplImage* imgOut , float & confidence , float red_pts_prec  )
 {
 	IplImage * imgcolor = cvCreateImage( cvSize( 28 , 28 ) , 8  , 1 );
 	
 	cvSetZero( imgcolor );
 
-	bool hasma = jh::getRedPixelsInHSVRange( imgSrc , *adapt_thresholder , red_pts_prec , imgcolor );	
+	bool hasma = jh::getRedPixelsInHSVRange2( imgSrc , *adapt_thresholder , red_pts_prec , imgcolor );	
+
+//	cvReleaseImage( &imgSrc );
+//	imgOut = cvCreateImage( cvSize(280 , 280) , 8 , 1 );
+	cvSetZero( imgOut );
 
 	if ( !hasma ) 
 	{
 		cvReleaseImage( &imgcolor );
 		confidence = 1;
-		return -1;
+		return -1 ;
+	}
+
+	for ( int irow = 0 ; irow < 280 ; ++ irow )
+	for ( int icol = 0 ; icol < 280 ; ++ icol )
+	{ 
+		cvSetReal2D( imgOut , irow , icol , cvGetReal2D( imgcolor , irow/10 , icol/10 ) );
 	}
 
 //	string te2("1111111end");

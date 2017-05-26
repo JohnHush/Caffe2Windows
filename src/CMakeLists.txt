@@ -1,38 +1,37 @@
-set( SRC_LIST "" )
-
-list( APPEND SRC_LIST MAINENTRY.cpp tools_classifier.cpp util.cpp )
-list( APPEND SRC_LIST Binarizator/adaptive_threshold.cpp )
-list( APPEND SRC_LIST Boxdetector/line_box_detector.cpp )
-list( APPEND SRC_LIST Classifier/Mixed_Gaussian_Classifier.cpp )
-
-#set( CMAKE_BUILD_TYPE Release )
-
-add_executable( MAINENTRY ${SRC_LIST} )
-
-#target_link_libraries( MAINENTRY ${OpenBLAS_LIB} ${Caffe_LIBRARIES} ${OpenCV_LIBS} )
-
-if ( MSVC )
 set( SRC_LIST_LIB "" )
 
-list( APPEND SRC_LIST_LIB Boxdetector/line_box_detector.hpp )
-list( APPEND SRC_LIST_LIB HandWritingDigitsRecognitionSystem.cpp  tools_classifier.cpp util.cpp )
+list( APPEND SRC_LIST_LIB HandWritingDigitsRecognitionSystem.cpp )
+list( APPEND SRC_LIST_LIB  tools_classifier.cpp util.cpp )
 list( APPEND SRC_LIST_LIB Binarizator/adaptive_threshold.cpp )
 list( APPEND SRC_LIST_LIB Boxdetector/line_box_detector.cpp )
-list( APPEND SRC_LIST_LIB Classifier/Mixed_Gaussian_Classifier.cpp )
+list( APPEND SRC_LIST_LIB Classifier/Mixed_Gaussian_Classifier.cpp caffe.pb.cc )
 
-add_library( OCRLIB SHARED ${SRC_LIST_LIB} )
+add_library( OCR_PREDICT SHARED ${SRC_LIST_LIB} )
 
-target_link_libraries( OCRLIB ${Caffe_LIBRARIES} ${OpenCV_LIBS} )
+target_link_libraries( OCR_PREDICT PUBLIC ${OCR_PREDICTION_LIB} )
+target_include_directories( OCR_PREDICT PUBLIC ${OCR_PREDICTION_INCLUDE} )
+target_compile_definitions( OCR_PREDICT PUBLIC ${OCR_PREDICTION_DEFINITION} )
 
+set( SRC_LIST_OCRTRAIN_LIB "" )
 
-INSTALL( TARGETS OCRLIB
+list( APPEND SRC_LIST_OCRTRAIN_LIB HandWritingDigitsRecognitionSystem.cpp util_caffe.cpp )
+list( APPEND SRC_LIST_OCRTRAIN_LIB  tools_classifier.cpp util.cpp )
+list( APPEND SRC_LIST_OCRTRAIN_LIB Binarizator/adaptive_threshold.cpp )
+list( APPEND SRC_LIST_OCRTRAIN_LIB Boxdetector/line_box_detector.cpp )
+list( APPEND SRC_LIST_OCRTRAIN_LIB Classifier/Mixed_Gaussian_Classifier.cpp )
+list( APPEND SRC_LIST_OCRTRAIN_LIB HandWritingDigitsRecognitionSystem.h util_caffe.hpp )
+list( APPEND SRC_LIST_OCRTRAIN_LIB  tools_classifier.hpp util.hpp )
+list( APPEND SRC_LIST_OCRTRAIN_LIB Binarizator/adaptive_threshold.hpp )
+list( APPEND SRC_LIST_OCRTRAIN_LIB Boxdetector/line_box_detector.hpp )
+list( APPEND SRC_LIST_OCRTRAIN_LIB Classifier/Mixed_Gaussian_Classifier.hpp )
+
+add_library( OCR_TRAIN SHARED ${SRC_LIST_OCRTRAIN_LIB})
+
+target_link_libraries( OCR_TRAIN PUBLIC ${OCR_TRAINING_LIB} )
+target_include_directories( OCR_TRAIN PUBLIC ${OCR_TRAINING_INCLUDE} )
+target_compile_definitions( OCR_TRAIN PUBLIC ${OCR_TRAINING_DEFINITION} )
+
+INSTALL( TARGETS OCR_PREDICT OCR_TRAIN
         RUNTIME DESTINATION bin
         LIBRARY DESTINATION staticlib
         ARCHIVE DESTINATION lib )
-
-
-
-add_executable( DLLTEST test_dll.cpp )
-target_link_libraries( DLLTEST OCRLIB )
-
-endif( MSVC )
