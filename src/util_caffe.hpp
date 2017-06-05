@@ -22,11 +22,10 @@ using std::string;
 using std::vector;
 using std::pair;
 
-#ifdef _WINDOWS
+
 OCRAPI void read_Windows_Data2_LevelDB(string data_path, string lmdb_path);
 OCRAPI void read_Windows_Data2_Existing_LevelDB(string data_path, ldb_handler & HANDLER);
 OCRAPI int getAllImages(vector< pair<string, int> > & imgName, string path, int LABEL = -1);
-#endif
 
 OCRAPI void rotate_leveldb( string & db_in , string & db_out , int angle );
 OCRAPI void merge_data_and_split( vector<string> & db_paths , string & training_path , string & testing_path );

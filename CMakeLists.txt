@@ -9,6 +9,9 @@ endif( DEFINE_DEBUG )
 
 if ( UNIX )
 	set( CMAKE_CXX_STANDARD 11)
+	set( CMAKE_CXX_FLAGS "-g -O0 " )
+	set( CMAKE_C_FLAGS "-g -O0" )
+
 	include( /home/pitaloveu/caffe/build/install/share/Caffe/CaffeConfig.cmake)
 	include( /usr/local/share/OpenCV/OpenCVConfig.cmake )
 

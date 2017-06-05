@@ -12,6 +12,7 @@ using namespace caffe;
 
 #include <fcntl.h>
 #include "util.hpp"
+#include "util_caffe.hpp"
 #include "Binarizator/adaptive_threshold.hpp"
 #include "tools_classifier.hpp"
 //#define FINETUNE

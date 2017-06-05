@@ -5,6 +5,11 @@ file( GLOB_RECURSE srcs ${CMAKE_CURRENT_SOURCE_DIR}/*.cpp )
 
 foreach( source ${srcs} )
 	get_filename_component( name ${source} NAME_WE )
+
+	if ( NOT name MATCHES "test_addData_windows" )
+		continue()
+	endif()
+
 	if( name MATCHES "test_dll" OR name MATCHES "test_predict_using_caffe" )
 		add_executable( ${name} ${source} ../src/caffe.pb.cc )
 		target_link_libraries( ${name} OCR_PREDICT ${OCR_PREDICTION_LIB} )

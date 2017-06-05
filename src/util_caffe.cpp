@@ -15,6 +15,11 @@
 #ifdef _WINDOWS
 #include <io.h>
 #endif
+#ifdef UNIX
+#include <unistd.h>
+#include <dirent.h>
+#include <sys/stat.h>
+#endif
 
 #ifdef BUILD_OCR_PREDICT
 #include "caffe.pb.h"
@@ -141,6 +146,63 @@ void merge_data_and_split(vector<string> & db_paths, string & training_path, str
 	delete db2;
 
 }
+#ifdef UNIX
+int getAllImages(vector< pair<string, int> > & imgName, string path, int LABEL)
+{
+	DIR * dp;
+	struct dirent * entry;
+	struct stat statbuf;
+	string path_recur;
+	int count = 0;
+
+	if ( path[path.size()-1] != '/' )
+		path = path + '/';
+
+	if ( (dp = opendir( path.c_str() ) ) == NULL )
+	{
+		LOG(FATAL) << "CAN'T OPEN THE DIRECTORY: " << path << " for unknown reason" << std::endl;
+		return -1;
+	}
+	chdir( path.c_str() );
+	int label;
+	while( (entry = readdir(dp)) != NULL )
+	{
+		lstat( entry->d_name , &statbuf );
+		if ( S_ISDIR( statbuf.st_mode ) && strcmp( "." , entry->d_name ) !=0 &&
+				strcmp( ".." , entry->d_name ) != 0 && LABEL == -1 )
+		{
+			if ( strlen( entry->d_name ) == 1 && (entry->d_name)[0] >= '0' && 
+					(entry->d_name)[0] <= '9')
+				label = (entry->d_name)[0] - '0';
+			else
+				label = -1;
+			count += getAllImages( imgName , path_recur.assign(path).append(entry->d_name) , label );
+		}
+		if ( LABEL != -1 && strcmp( "." , entry->d_name ) !=0 && strcmp( ".." , entry->d_name ) != 0
+				&& ! S_ISDIR( statbuf.st_mode ) )
+		{
+			int tmp = LABEL;
+			if ( strlen( entry->d_name ) >= 5 && 
+				(entry->d_name)[strlen(entry->d_name) - 1 ] == 'g' &&
+				(entry->d_name)[strlen(entry->d_name) - 2 ] == 'p' && 
+				(entry->d_name)[strlen(entry->d_name) - 3 ] == 'j' && 
+				(entry->d_name)[strlen(entry->d_name) - 4 ] == '.' && 
+				(entry->d_name)[strlen(entry->d_name) - 5 ] != 'p' && 
+				(entry->d_name)[strlen(entry->d_name) - 5 ] >= '0' && 
+				(entry->d_name)[strlen(entry->d_name) - 5 ] <= '9' )
+
+				tmp = (entry->d_name)[strlen(entry->d_name) - 5 ] - '0';
+
+			count ++;
+			imgName.push_back( std::make_pair( path + string(entry->d_name) , tmp ) );
+
+		}
+	}
+	chdir( ".." );
+	closedir(dp);
+	return count;
+}
+#endif
 
 #ifdef _WINDOWS
 int getAllImages(vector< pair<string, int> > & imgName, string path, int LABEL)
@@ -194,6 +256,7 @@ int getAllImages(vector< pair<string, int> > & imgName, string path, int LABEL)
 
 	return count;
 }
+#endif
 
 OCRAPI void read_Windows_Data2_Existing_LevelDB(string data_path, ldb_handler & HANDLER )
 {
@@ -301,7 +364,7 @@ void read_Windows_Data2_LevelDB( string data_path , string lmdb_path )
 	}
 	delete[] pixels;
 }
-#endif
+
 
 int ldb_handler::BASE_NUMBER_;
 

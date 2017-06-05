@@ -26,7 +26,7 @@ for ( int index_img = 1 ; index_img < 23 ; index_img++ )
 	if ( index_img < 10 )
 		index_num = string("0") + index_num;
 #ifdef UNIX
-	string IMG_NAME = "/home/pitaloveu/orion-eye/finetune_data_withoutBOX/Page00" + index_num + ".jpg";
+	string IMG_NAME = "/home/pitaloveu/Caffe2Windows/finetune_data_withoutBOX/Page00" + index_num + ".jpg";
 #endif
 #ifdef _WINDOWS
 	string IMG_NAME = "D:\\MyProjects\\orion-eye\\finetune_data_withoutBOX\\Page00" + index_num + ".jpg";
@@ -260,7 +260,7 @@ if ( false ){
 	leveldb::WriteBatch * batch = new leveldb::WriteBatch() ;
 
 	leveldb::Status status = leveldb::DB::Open( options , 
-				"/home/pitaloveu/orion-eye/finetune_data_withoutBOX/finetune_training_data_leveldb" , &db );
+				"/home/pitaloveu/Caffe2Windows/finetune_data_withoutBOX/finetune_training_data_leveldb" , &db );
 
 	Datum datum;
 	datum.set_channels(1);
@@ -287,7 +287,7 @@ scoped_ptr<db::DB> db(db::GetDB(string("leveldb")));
 db->Open( "D:\\MyProjects\\orion-eye\\finetune_data_withoutBOX\\finetune_training_data_leveldb" , db::NEW);
 #endif
 #ifdef UNIX
-db->Open( "/home/pitaloveu/orion-eye/finetune_data_withoutBOX/finetune_training_data_leveldb" , db::NEW);
+db->Open( "/home/pitaloveu/Caffe2Windows/finetune_data_withoutBOX/finetune_training_data_leveldb" , db::NEW);
 #endif
 scoped_ptr<db::Transaction> txn(db->NewTransaction());
 
@@ -312,7 +312,7 @@ db->Close();
 db->Open( "D:\\MyProjects\\orion-eye\\finetune_data_withoutBOX\\finetune_testing_data_leveldb" , db::NEW);
 #endif
 #ifdef UNIX
-db->Open( "/home/pitaloveu/orion-eye/finetune_data_withoutBOX/finetune_testing_data_leveldb" , db::NEW);
+db->Open( "/home/pitaloveu/Caffe2Windows/finetune_data_withoutBOX/finetune_testing_data_leveldb" , db::NEW);
 #endif
 scoped_ptr<db::Transaction> txn2(db->NewTransaction());
 

@@ -39,10 +39,10 @@ int main( void )
 	ldb_handler ldbHandler( "/home/pitaloveu/orion-eye/finetune_data_withoutBOX/finetune_training_data_leveldb" );
 
 
-	vector<IplImage *> IMGS(1);
+	vector<cv::Mat> IMGS(1);
 	vector<int> LABELS(1);
 
-	IMGS[0] = imgred;
+	IMGS[0] = cv::Mat( imgred ) ;
 	LABELS[0] = 2;
 
 	ldbHandler.addSomeData( IMGS , LABELS );

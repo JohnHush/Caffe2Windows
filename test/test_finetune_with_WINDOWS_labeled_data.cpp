@@ -49,6 +49,8 @@ int main( int argc , char ** argv )
 		return -1;
 	}
 
+	return 1;
+
 	ldb_handler MyDBHandler( "D:\\MyProjects\\orion-eye\\base_data\\finetune_training_data_leveldb" );
 	vector<cv::Mat> imgs(1);
 	vector<int> labels(1);
