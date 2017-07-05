@@ -1,15 +1,16 @@
-set( SRC_LIST "" )
-
 include_directories( AFTER "../src" )
-list( APPEND SRC_LIST convert_data_written_by_fengchejiaoyu.cpp )
 
-add_executable( CONVERT_DATA ${SRC_LIST} )
+file( GLOB_RECURSE srcs ${CMAKE_CURRENT_SOURCE_DIR}/*.cpp )
 
-target_link_libraries( CONVERT_DATA PUBLIC ${OCR_TRAINING_LIB} OCR_TRAIN )
-target_include_directories( CONVERT_DATA PUBLIC ${OCR_TRAINING_INCLUDE} )
-target_compile_definitions( CONVERT_DATA PUBLIC ${OCR_TRAINING_DEFINITION} )
+foreach( source ${srcs} )
+	get_filename_component( name ${source} NAME_WE )
+	add_executable( ${name} ${source} )
+	target_link_libraries( ${name} PUBLIC ${OCR_TRAINING_LIB} OCR_TRAIN )
+	target_include_directories( ${name} PUBLIC ${OCR_TRAINING_INCLUDE} )
+	target_compile_definitions( ${name} PUBLIC ${OCR_TRAINING_DEFINITION} )
+	INSTALL( TARGETS ${name}
+			RUNTIME DESTINATION bin
+			LIBRARY DESTINATION staticlib
+			ARCHIVE DESTINATION lib )
+endforeach( source )
 
-INSTALL( TARGETS CONVERT_DATA
-        RUNTIME DESTINATION bin
-        LIBRARY DESTINATION staticlib
-        ARCHIVE DESTINATION lib )
