@@ -143,7 +143,7 @@ void merge_data_and_split(vector<string> & db_paths, string & training_path, str
 }
 
 #ifdef _WINDOWS
-int getAllImages(vector< pair<string, int> > & imgName, string path, int LABEL)
+OCRAPI int getAllImages(vector< pair<string, int> > & imgName, string path, int LABEL)
 {
 	struct _finddata_t fileinfo;
 	long handle;
@@ -175,22 +175,12 @@ int getAllImages(vector< pair<string, int> > & imgName, string path, int LABEL)
 		if (LABEL != -1 && strcmp(fileinfo.name, ".") != 0 &&
 			strcmp(fileinfo.name, "..") != 0 && !(fileinfo.attrib &  _A_SUBDIR))
 		{
-			int tmp = LABEL;
-			if (strlen(fileinfo.name) >= 5 &&
-				fileinfo.name[strlen(fileinfo.name) - 1] == 'g' &&
-				fileinfo.name[strlen(fileinfo.name) - 2] == 'p' &&
-				fileinfo.name[strlen(fileinfo.name) - 3] == 'j' &&
-				fileinfo.name[strlen(fileinfo.name) - 4] == '.' &&
-				fileinfo.name[strlen(fileinfo.name) - 5] != 'p' &&
-				fileinfo.name[strlen(fileinfo.name) - 5] >= '0' &&
-				fileinfo.name[strlen(fileinfo.name) - 5] <= '9'
-				)
-				tmp = fileinfo.name[strlen(fileinfo.name) - 5] - '0';
-
 			count++;
-			imgName.push_back(std::make_pair(s_tmp.assign(path).append("\\").append(fileinfo.name), tmp));
+			imgName.push_back(std::make_pair(s_tmp.assign(path).append("\\").append(fileinfo.name), LABEL));
 		}
 	} while (_findnext(handle, &fileinfo) == 0);
+
+	std::random_shuffle( imgName.begin() , imgName.end() );
 
 	return count;
 }
@@ -274,9 +264,11 @@ void read_Windows_Data2_LevelDB( string data_path , string lmdb_path )
 			LOG(INFO) << "some unqualified image occured" << endl;
 			continue;
 		}
+		cv::Mat imgMatSmall(28,28,imgMat.type());
+		cv::resize(imgMat, imgMatSmall, imgMatSmall.size() );
 		for (int irow = 0; irow < 28; irow++)
 			for (int icol = 0; icol < 28; icol++)
-				pixels[irow * 28 + icol] = imgMat.at<unsigned char>(irow * 10, icol * 10);
+				pixels[irow * 28 + icol] = imgMatSmall.at<unsigned char>(irow , icol );
 
 		datum.set_data(pixels, 28 * 28);
 		datum.set_label(imgName[item_id].second);
@@ -534,11 +526,13 @@ vector<float> compute_score_by_caffe( const IplImage * imgSrc , const string & d
 	return score;
 }
 
-void finetune_with_Existing_LevelDB(const string & pretrained_model, const string & train_net_arch_prototxt)
+void finetune_with_Existing_LevelDB(const string & pretrained_model, const string & train_net_arch_prototxt 
+	, const string & training_set , const string & testing_set , const int iteration_TIMES )
 {
 	using namespace caffe;
 
 	SolverParameter solver_param;
+	NetParameter net_param;
 
 #ifdef UNIX
 	int MAXBUFSIZE = 1024;
@@ -565,21 +559,41 @@ void finetune_with_Existing_LevelDB(const string & pretrained_model, const strin
 #ifdef APPLE
 	LOG(FATAL) << "implement the method here" << std::endl;
 #endif
-	const int iteration_times = 2000;
+	const int iteration_times = iteration_TIMES;
 	stringstream ss;
 	string s_iteration_times;
 	ss << iteration_times;
 	ss >> s_iteration_times;
 
-	solver_param.set_net((exePath + train_net_arch_prototxt).c_str());
-	solver_param.set_iter_size(10);
-	solver_param.add_test_iter(10);
-	solver_param.set_test_interval(10);
+	ReadNetParamsFromTextFileOrDie((exePath + train_net_arch_prototxt).c_str(), &net_param );
+
+	for (int index = 0; index < net_param.layer_size(); ++index)
+	{
+		LayerParameter *layer_param = net_param.mutable_layer(index);
+		if (layer_param->type() == "Data" && layer_param->include(0).phase() == Phase::TRAIN )
+		{
+			DataParameter * data_param = layer_param->mutable_data_param();
+			data_param->set_source(training_set.c_str());
+
+		}
+		if (layer_param->type() == "Data" && layer_param->include(0).phase() == Phase::TEST)
+		{
+			DataParameter * data_param = layer_param->mutable_data_param();
+			data_param->set_source(testing_set.c_str());
+		}
+	}
+
+	cout << net_param.DebugString() << endl;
+	solver_param.mutable_net_param()->CopyFrom(net_param);
+	//solver_param.set_net((exePath + train_net_arch_prototxt).c_str());
+//	solver_param.set_iter_size(10);
+	solver_param.add_test_iter(100);
+	solver_param.set_test_interval(100);
 	solver_param.set_base_lr(0.001);
 	solver_param.set_momentum(0.9);
 	solver_param.set_momentum2(0.999);
 	solver_param.set_lr_policy("fixed");
-	solver_param.set_display(0);
+	solver_param.set_display(100);
 	solver_param.set_max_iter(iteration_times);
 	solver_param.set_snapshot(iteration_times);
 	solver_param.set_snapshot_prefix("retrained");
@@ -598,7 +612,7 @@ void finetune_with_Existing_LevelDB(const string & pretrained_model, const strin
 	shared_ptr<caffe::Solver<float> >
 		solver(caffe::SolverRegistry<float>::CreateSolver(solver_param));
 
-	solver->net()->CopyTrainedLayersFrom(exePath + pretrained_model);
+//	solver->net()->CopyTrainedLayersFrom(exePath + pretrained_model);
 
 	solver->Solve();
 

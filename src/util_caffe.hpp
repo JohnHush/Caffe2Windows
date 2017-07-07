@@ -40,7 +40,8 @@ OCRAPI void finetune_by_caffe_leveldb(const string & pretrained_model, const str
 												vector<cv::Mat> & imgs, vector<int> & labels , const string & base_db );
 // finetune a pre-trained model using caffe lib based on a base leveldb;
 
-OCRAPI void finetune_with_Existing_LevelDB( const string & pretrained_model, const string & train_net_arch_prototxt );
+OCRAPI void finetune_with_Existing_LevelDB( const string & pretrained_model, const string & train_net_arch_prototxt ,
+	const string & training_set, const string & testing_set, const int iteration_TIMES );
 
 // we have processed the training db from labeled WINDOWS images, here just finetune.
 
