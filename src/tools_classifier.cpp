@@ -25,14 +25,13 @@ namespace jh
 		IplImage * imgBla4Dilate = cvCreateImage(cvGetSize(imgSrc), 8, 1);
 		BINTOR.binarizate(imgSrc, imgBin);
 
-//		showImage(imgBin, 1, "imgbin", 0);
+//		showImage(imgBin, 1, "imgbin", 1000);
 
 		cvCvtColor(imgSrc, imgGra, CV_BGR2GRAY);
 
 		cvSetZero(imgRed);
 		cvSetZero(imgBla);
 		cvSetZero(imgBla4Dilate);
-
 
 		/*
 		* seperate red points and black pts based on HSV value
@@ -62,14 +61,6 @@ namespace jh
 		IplConvKernel * dilate_kernel1 = cvCreateStructuringElementEx(3, 3, 1, 1, CV_SHAPE_RECT);
 		IplConvKernel * dilate_kernel2 = cvCreateStructuringElementEx(5, 5, 2, 2, CV_SHAPE_RECT);
 
-		/*
-			to conquer the problem of red pixels leaking out of 
-			black pixels, we erode the red pixels first, then 
-			do dilate, then thin red pixels will be eleminated.
-		*/
-		cvErode ( imgRed , imgRed , dilate_kernel1 );
-		cvDilate( imgRed , imgRed , dilate_kernel1 );
-
 #ifdef DEBUG
 		showImage(imgRed, 1., "red pixels in the image ");
 		showImage(imgBla, 1., "black pixels in the image ");
@@ -97,27 +88,42 @@ namespace jh
 		}
 		
 		cvDilate(imgBla, imgBla, dilate_kernel2);
+//		showImage(imgBla, 1, "black", 0);
 //		cvDilate(imgBla4Dilate, imgBla4Dilate, dilate_kernel);
 
-		for (int irow = 0; irow < imgBla->height; ++irow)
-			for (int icol = 0; icol < imgBla->width; ++icol)
-				if (cvGetReal2D(imgBla, irow, icol) != 0 )
-					cvSetReal2D(imgRed, irow, icol, 0);
+		//for (int irow = 0; irow < imgBla->height; ++irow)
+		//	for (int icol = 0; icol < imgBla->width; ++icol)
+		//		if (cvGetReal2D(imgBla, irow, icol) != 0 )
+		//			cvSetReal2D(imgRed, irow, icol, 0);
 
 #ifdef DEBUG
 		showImage(imgBla, 1, "the dilated boundary lines");
 		showImage(imgRed, 1, "the residual red points after filtered out the dilated boundary lines");
 #endif
 		int red_pts_count = 0;
+		int bla_pts_count = 0;
 		for (int irow = 0; irow < imgRed->height; ++irow)
 			for (int icol = 0; icol < imgRed->width; ++icol)
 			{
 				if (cvGetReal2D(imgRed, irow, icol) != 0)
 					red_pts_count++;
+				if (cvGetReal2D(imgBla4Dilate, irow, icol) != 0 && cvGetReal2D(imgBla, irow, icol) ==0)
+					bla_pts_count++;
 			}
 
+		/*
+		to conquer the problem of red pixels leaking out of
+		black pixels, we erode the red pixels first, then
+		do dilate, then thin red pixels will be eleminated.
+		*/
+		if (1. * bla_pts_count / pts_count > red_pts_prec)
+		{
+			cvErode(imgRed, imgRed, dilate_kernel1);
+			cvDilate(imgRed, imgRed, dilate_kernel1);
+		}
+
 		cvReleaseImage(&imgBin);
-		cvReleaseImage(&imgBla);
+//		cvReleaseImage(&imgBla);
 		cvReleaseImage(&imgBla4Dilate);
 		cvReleaseImage(&imgHSV);
 		cvReleaseStructuringElement(&dilate_kernel1);
@@ -127,6 +133,7 @@ namespace jh
 		{
 			cvReleaseImage(&imgGra);
 			cvReleaseImage(&imgRed);
+			cvReleaseImage(&imgBla);
 			return false;
 		}
 		// filter imgGra using imgRed mask
@@ -143,14 +150,22 @@ namespace jh
 		* that means we get rid of small ones;
 		*/
 		CvSeq * contours;
+
+		IplImage * imgRedClone = cvCloneImage(imgRed);
 		cvFindContours(imgRed, storage, &contours, sizeof(CvContour), CV_RETR_EXTERNAL, CV_CHAIN_APPROX_SIMPLE);
-		cvReleaseImage(&imgBla);
 
 		CvContour * contourGetter = (CvContour *)contours;
 		vector< pair<CvRect, double> > contour_rect_area_pair;
 
 		do
 		{
+			CvRect & rect = contourGetter->rect;
+			CvPoint pt1 = cvPoint( rect.x , rect.y );
+			CvPoint pt2 = cvPoint( rect.x + rect.width , rect.y + rect.height );
+
+			if (cvGetReal2D(imgBla, pt1.y, pt1.x) !=0 && cvGetReal2D(imgBla, pt2.y, pt2.x) !=0)
+				continue;
+
 			pair<CvRect, double> tmp = make_pair(contourGetter->rect, fabs(cvContourArea(contourGetter)));
 			contour_rect_area_pair.push_back(tmp);
 
@@ -176,16 +191,17 @@ namespace jh
 		}
 
 		// ready to rsize the gray image in BBOX range
-		cvSetImageROI(imgGra, BBOX);
+		cvSetImageROI(imgRedClone, BBOX);
 
 		int box_width = BBOX.width;
 		int box_heigh = BBOX.height;
 
 		// MNIST data is 20 * 20 size but in a box of 28 *28 
-		float scale = 20 / float(box_width>box_heigh ? box_width : box_heigh);
+		// in this function we convert the destinated pic into 280 * 280 pixels
+		float scale = 200 / float(box_width>box_heigh ? box_width : box_heigh);
 
-		int tmp_width = int(28 / scale);
-		int tmp_heigh = int(28 / scale);
+		int tmp_width = int(280 / scale);
+		int tmp_heigh = int(280 / scale);
 
 		IplImage * imgTMP = cvCreateImage(cvSize(tmp_width, tmp_heigh), 8, 1);
 		cvSetZero(imgTMP);
@@ -195,9 +211,9 @@ namespace jh
 
 		for (int ir = 0; ir < box_heigh; ++ir)
 			for (int ic = 0; ic < box_width; ++ic)
-				cvSetReal2D(imgTMP, ir + yGap, ic + xGap, cvGetReal2D(imgGra, ir, ic));
+				cvSetReal2D(imgTMP, ir + yGap, ic + xGap, cvGetReal2D(imgRedClone, ir, ic));
 
-		IplImage * imgTMP2 = cvCreateImage(cvSize(28, 28), 8, 1);
+		IplImage * imgTMP2 = cvCreateImage(cvSize(280, 280), 8, 1);
 		cvSetZero(imgTMP2);
 
 		cvResize(imgTMP, imgTMP2, CV_INTER_AREA);
@@ -207,8 +223,8 @@ namespace jh
 		int yHeart_resize = 0;
 		int count_resize = 0;
 
-		for (int ir = 0; ir < 28; ++ir)
-			for (int ic = 0; ic < 28; ++ic)
+		for (int ir = 0; ir < 280; ++ir)
+			for (int ic = 0; ic < 280; ++ic)
 			{
 				if (cvGetReal2D(imgTMP2, ir, ic) != 0)
 				{
@@ -222,20 +238,20 @@ namespace jh
 
 		cvSetZero(imgRst);
 
-		for (int ir = 0; ir < 28; ++ir)
-			for (int ic = 0; ic < 28; ++ic)
+		for (int ir = 0; ir < 280; ++ir)
+			for (int ic = 0; ic < 280; ++ic)
 			{
-				int xcor = ic - 14 + xHeart_resize;
-				int ycor = ir - 14 + yHeart_resize;
-				if (xcor >= 0 && xcor < 28 && ycor >= 0 && ycor < 28)
+				int xcor = ic - 140 + xHeart_resize;
+				int ycor = ir - 140 + yHeart_resize;
+				if (xcor >= 0 && xcor < 280 && ycor >= 0 && ycor < 280)
 					cvSetReal2D(imgRst, ir, ic, cvGetReal2D(imgTMP2, ycor, xcor));
 			}
 
 		// ususally after resizing ,the gray scale is usually low , so we rescale it to 0-255
 		int ave_gray = 0;
 		int gray_count = 0;
-		for (int ir = 0; ir < 28; ++ir)
-			for (int ic = 0; ic < 28; ++ic)
+		for (int ir = 0; ir < 280; ++ir)
+			for (int ic = 0; ic < 280; ++ic)
 			{
 				if (cvGetReal2D(imgRst, ir, ic) != 0)
 				{
@@ -247,18 +263,23 @@ namespace jh
 
 		float scale_factor = 255. / ave_gray;
 
-		for (int ir = 0; ir < 28; ++ir)
-			for (int ic = 0; ic < 28; ++ic)
+		
+		for (int ir = 0; ir < 280; ++ir)
+			for (int ic = 0; ic < 280; ++ic)
 			{
 				if (int(cvGetReal2D(imgRst, ir, ic) *scale_factor * 0.7) > 255)
 					cvSetReal2D(imgRst, ir, ic, 255);
 				else
 					cvSetReal2D(imgRst, ir, ic, int(cvGetReal2D(imgRst, ir, ic) *scale_factor * 0.8));
 			}
+		
 		//showImage( imgRst , 10 , "dd" );
 		cvReleaseImage(&imgTMP);
 		cvReleaseImage(&imgTMP2);
 		cvReleaseImage(&imgGra);
+		cvReleaseImage(&imgRed);
+		cvReleaseImage(&imgRedClone);
+		cvReleaseImage(&imgBla);
 
 		return true;
 	}

@@ -157,12 +157,9 @@ void deletePredictor()
 	IplImage * imgcolor = cvCreateImage( cvSize( 28 , 28 ) , 8  , 1 );
 	
 	cvSetZero( imgcolor );
+	cvSetZero(imgOut);
 
-	bool hasma = jh::getRedPixelsInHSVRange2( imgSrc , *adapt_thresholder , red_pts_prec , imgcolor );	
-
-//	cvReleaseImage( &imgSrc );
-//	imgOut = cvCreateImage( cvSize(280 , 280) , 8 , 1 );
-	cvSetZero( imgOut );
+	bool hasma = jh::getRedPixelsInHSVRange2( imgSrc , *adapt_thresholder , red_pts_prec , imgOut );	
 
 	if ( !hasma ) 
 	{
@@ -171,11 +168,7 @@ void deletePredictor()
 		return -1 ;
 	}
 
-	for ( int irow = 0 ; irow < 280 ; ++ irow )
-	for ( int icol = 0 ; icol < 280 ; ++ icol )
-	{ 
-		cvSetReal2D( imgOut , irow , icol , cvGetReal2D( imgcolor , irow/10 , icol/10 ) );
-	}
+	cvResize(imgOut , imgcolor);
 
 //	string te2("1111111end");
 //	MessageBoxA(NULL,"1111111end","1111111end",MB_OK|MB_SYSTEMMODAL);

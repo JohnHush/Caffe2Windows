@@ -14,6 +14,8 @@ endif( DEFINE_DEBUG )
 # 2. OPENBLAS
 # 3. protobuf 3.2.0
 
+if( TRUE )
+
 set( PATH_TO_VS2010_OPENCV246 D:/MyLibs/VS2010LIB/opencv246 )
 set( PATH_TO_VS2010_PROTOBUF320  D:/MyLibs/VS2010LIB/protobuf )
 set( PATH_TO_VS2010_OPENBLAS0214 D:/MyLibs/VS2010LIB/OpenBLAS-v0.2.14-Win32 )
@@ -31,7 +33,7 @@ set( OPENCV246_LIBS debug ${PATH_TO_VS2010_OPENCV246}/lib/opencv_core246d.lib
 	optimized ${PATH_TO_VS2010_OPENCV246}/lib/opencv_imgproc246.lib )
 
 set( OPENBLAS_INCLUDE_DIRS ${PATH_TO_VS2010_OPENBLAS0214}/include )
-set( OPENBLAS_LIBS ${PATH_TO_VS2010_OPENBLAS0214}/libopenblas.dll.a )
+set( OPENBLAS_LIBS ${PATH_TO_VS2010_OPENBLAS0214}/lib/libopenblas.dll.a )
 
 set( PROTOBUF_INCLUDE_DIRS ${PATH_TO_VS2010_PROTOBUF320}/include )
 set( PROTOBUF_LIBS optimized ${PATH_TO_VS2010_PROTOBUF320}/lib//libprotobuf.lib 
@@ -62,6 +64,8 @@ set( OCR_TRAINING_DEFINITION _WINDOWS CPU_ONLY USE_OPENCV USE_LMDB USE_LEVELDB)
 add_subdirectory( src src_build )
 add_subdirectory( test test_build )
 add_subdirectory( tools tools_build )
+
+endif( )
 
 if( FALSE )
 
