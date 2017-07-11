@@ -167,8 +167,13 @@ void deletePredictor()
 		confidence = 1;
 		return -1 ;
 	}
+	
 
-	cvResize(imgOut , imgcolor);
+//	IplImage * imgGaussianFiltered = cvCreateImage( cvSize(280,280) , 8 , 1);
+	cvSmooth( imgOut , imgOut, 2 , 17 );
+
+	cvResize(imgOut, imgcolor);
+//	cvReleaseImage(&imgGaussianFiltered);
 
 //	string te2("1111111end");
 //	MessageBoxA(NULL,"1111111end","1111111end",MB_OK|MB_SYSTEMMODAL);

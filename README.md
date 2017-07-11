@@ -11,7 +11,7 @@
 在使用Microsoft Visual Studio C++时要特别注意MSVC的版本，我们现在使用的是VS2010和VS2015。
 * 使用openblas时，可能会报MSB4030错误，提示LNK GenerateDebugInformation参数是无效值。解决方案是： “属性——配置属性——链接器——调试”中 “生成调试信息”选择“否”！
 * 使用openblas时，VS2010 fatal error LNK1123: 转换到 COFF 期间失败；解决方案是：将 项目|项目属性|配置属性|连接器|清单文件|嵌入清单 “是”改为“否”！
-* 在使用openblas时，在release模式下可能出现出现"0x00905a4d 处未处理的异常，但是在debug模式下并没有，解决方案是： 在release版本下面使用"保留未引用数据(/OPT:NOREF)"选项！
+* 在使用openblas时，在release模式下可能出现出现"0x00905a4d 处未处理的异常，但是在debug模式下并没有，解决方案是： 在release版本下面使用"保留未引用数据(/OPT:NOREF)"选项！ 链接器->优化->引用   中
 ##  Overview
 
 The purpose of this project is to automatically identify the hand-writing digits, Notice that this project only does one single thing! 

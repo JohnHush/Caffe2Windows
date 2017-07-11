@@ -88,7 +88,7 @@ namespace jh
 		}
 		
 		cvDilate(imgBla, imgBla, dilate_kernel2);
-//		showImage(imgBla, 1, "black", 0);
+//		showImage(imgBla, 1, "black",100);
 //		cvDilate(imgBla4Dilate, imgBla4Dilate, dilate_kernel);
 
 		//for (int irow = 0; irow < imgBla->height; ++irow)
@@ -100,6 +100,7 @@ namespace jh
 		showImage(imgBla, 1, "the dilated boundary lines");
 		showImage(imgRed, 1, "the residual red points after filtered out the dilated boundary lines");
 #endif
+		
 		int red_pts_count = 0;
 		int bla_pts_count = 0;
 		for (int irow = 0; irow < imgRed->height; ++irow)
@@ -110,7 +111,7 @@ namespace jh
 				if (cvGetReal2D(imgBla4Dilate, irow, icol) != 0 && cvGetReal2D(imgBla, irow, icol) ==0)
 					bla_pts_count++;
 			}
-
+		
 		/*
 		to conquer the problem of red pixels leaking out of
 		black pixels, we erode the red pixels first, then
@@ -128,7 +129,7 @@ namespace jh
 		cvReleaseImage(&imgHSV);
 		cvReleaseStructuringElement(&dilate_kernel1);
 		cvReleaseStructuringElement(&dilate_kernel2);
-
+		
 		if (1. * red_pts_count / pts_count < red_pts_prec)
 		{
 			cvReleaseImage(&imgGra);
@@ -150,29 +151,34 @@ namespace jh
 		* that means we get rid of small ones;
 		*/
 		CvSeq * contours;
-
+		
 		IplImage * imgRedClone = cvCloneImage(imgRed);
+		
 		cvFindContours(imgRed, storage, &contours, sizeof(CvContour), CV_RETR_EXTERNAL, CV_CHAIN_APPROX_SIMPLE);
 
 		CvContour * contourGetter = (CvContour *)contours;
 		vector< pair<CvRect, double> > contour_rect_area_pair;
-
+		
 		do
 		{
 			CvRect & rect = contourGetter->rect;
 			CvPoint pt1 = cvPoint( rect.x , rect.y );
 			CvPoint pt2 = cvPoint( rect.x + rect.width , rect.y + rect.height );
 
-			if (cvGetReal2D(imgBla, pt1.y, pt1.x) !=0 && cvGetReal2D(imgBla, pt2.y, pt2.x) !=0)
+			if (cvGetReal2D(imgBla, pt1.y, pt1.x) != 0 && cvGetReal2D(imgBla, pt2.y, pt2.x) != 0)
+			{
+				contourGetter = (CvContour *)contourGetter->h_next;
 				continue;
+			}
 
 			pair<CvRect, double> tmp = make_pair(contourGetter->rect, fabs(cvContourArea(contourGetter)));
 			contour_rect_area_pair.push_back(tmp);
 
 			contourGetter = (CvContour *)contourGetter->h_next;
 		} while (contourGetter != 0);
+		
 		cvReleaseMemStorage(&storage);
-
+		
 		// do the box merging and adding area
 		sort(contour_rect_area_pair.begin(), contour_rect_area_pair.end(), sort_area);
 		double whole_area = 0.;
@@ -195,7 +201,7 @@ namespace jh
 
 		int box_width = BBOX.width;
 		int box_heigh = BBOX.height;
-
+		
 		// MNIST data is 20 * 20 size but in a box of 28 *28 
 		// in this function we convert the destinated pic into 280 * 280 pixels
 		float scale = 200 / float(box_width>box_heigh ? box_width : box_heigh);
@@ -273,7 +279,7 @@ namespace jh
 					cvSetReal2D(imgRst, ir, ic, int(cvGetReal2D(imgRst, ir, ic) *scale_factor * 0.8));
 			}
 		
-		//showImage( imgRst , 10 , "dd" );
+//		showImage( imgRst , 10 , "dd" );
 		cvReleaseImage(&imgTMP);
 		cvReleaseImage(&imgTMP2);
 		cvReleaseImage(&imgGra);

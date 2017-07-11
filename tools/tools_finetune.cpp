@@ -20,16 +20,12 @@ int main( int argc , char ** argv )
 	db_path_string[0] = db_path;
 
 	vector< pair<string, int> > imgName;
-	int count = getAllImages(imgName, jpg_path);
+//	int count = getAllImages(imgName, jpg_path);
 	read_Windows_Data2_LevelDB(jpg_path, db_path);
 	merge_data_and_split(db_path_string , db_train_path , db_test_path );
 
-//	getback_to_ORIGINAL_MODEL("lenet_FINETUNE.caffemodel", "lenet_ORIGINAL.caffemodel");
-	finetune_with_Existing_LevelDB("lenet_FINETUNE.caffemodel", "lenet_train_leveldb.prototxt" , db_train_path , 
-		db_test_path , 10000 );
-
-
-	cout << "count = " << count << endl;
+	finetune_with_Existing_LevelDB("lenet_FINETUNE.caffemodel", "lenet_train_leveldb.prototxt", db_train_path,
+		db_test_path, 10000);
 
 	char s;
 	cin >> s;
