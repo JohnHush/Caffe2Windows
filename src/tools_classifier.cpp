@@ -11,8 +11,8 @@ using std::make_pair;
 namespace jh
 {
 
-	bool getRedPixelsInHSVRange2(IplImage * imgSrc, Binarizator & BINTOR, float red_pts_prec, IplImage * imgRst)
-	{
+bool getRedPixelsInHSVRange2(IplImage * imgSrc, Binarizator & BINTOR, float red_pts_prec, IplImage * imgRst)
+{
 		/*
 		 * Using some kind of Binarizator to binarize the image
 		 * usually choose adaptive thresholding defined in OpenCV
@@ -81,13 +81,49 @@ namespace jh
 			, THRESHOLD_LINE, MIN_LINE, MAX_GAP);
 
 		cvSetZero(imgBla);
+		
+		int LEFT_MOST = imgBla->width - 1;
+		int RIGH_MOST = 0;
+		int UP_MOST = imgBla->height - 1;
+		int DO_MOST = 0;
+
 		for (int i = 0; i<lines->total; i++)
 		{
 			CvPoint *line = (CvPoint *)cvGetSeqElem(lines, i);
+
+			if (abs(line[0].x - line[1].x) > abs(line[0].y - line[1].y))
+			{
+				if ((line[0].y + line[1].y) / 2 < UP_MOST)
+					UP_MOST = (line[0].y + line[1].y) / 2;
+				if ((line[0].y + line[1].y) / 2 > DO_MOST)
+					DO_MOST = (line[0].y + line[1].y) / 2;
+			}
+			else
+			{
+				if ((line[0].x + line[1].x) / 2 < LEFT_MOST)
+					LEFT_MOST = (line[0].x + line[1].x) / 2;
+				if ((line[0].x + line[1].x) / 2 > RIGH_MOST)
+					RIGH_MOST = (line[0].x + line[1].x) / 2;
+			}
+
 			cvLine(imgBla, line[0], line[1], cvScalar(255), 1, CV_AA);
 		}
+
+		if (LEFT_MOST > imgBla->width / 3)
+			LEFT_MOST = 0;
+		if (RIGH_MOST < (imgBla->width * 2) / 3)
+			RIGH_MOST = imgBla->width - 1;
+		if (UP_MOST > imgBla->height / 3)
+			UP_MOST = 0;
+		if (DO_MOST < (imgBla->height * 2) / 3)
+			DO_MOST = imgBla->height - 1;
 		
 		cvDilate(imgBla, imgBla, dilate_kernel2);
+
+		for (int ir = 0; ir < imgBla->height; ir++)
+			for (int ic = 0; ic < imgBla->width; ic++)
+				if (ir < UP_MOST || ir > DO_MOST || ic < LEFT_MOST || ic > RIGH_MOST)
+					cvSetReal2D( imgBla , ir , ic , 255 );
 //		showImage(imgBla, 1, "black",100);
 //		cvDilate(imgBla4Dilate, imgBla4Dilate, dilate_kernel);
 
@@ -288,252 +324,8 @@ namespace jh
 		cvReleaseImage(&imgBla);
 
 		return true;
-	}
-
-bool getRedPixelsInHSVRange( IplImage * imgSrc , Binarizator & BINTOR , float red_pts_prec , IplImage * imgRst )
-{
-	/*
-	 * Using some kind of Binarizator to binarize the image
-	 * usually choose adaptive thresholding defined in OpenCV
-	 */
-	IplImage * imgBin = cvCreateImage( cvGetSize( imgSrc ) , 8 , 1 );
-	IplImage * imgRed = cvCreateImage( cvGetSize( imgSrc ) , 8 , 1 );
-	IplImage * imgBla = cvCreateImage( cvGetSize( imgSrc ) , 8 , 1 );
-	IplImage * imgHSV = cvCreateImage( cvGetSize( imgSrc ) , 8 , 3 );
-	IplImage * imgGra = cvCreateImage( cvGetSize( imgSrc ) , 8 , 1 );
-	IplImage * imgBla4Dilate = cvCreateImage( cvGetSize( imgSrc ) , 8 , 1 );
-	BINTOR.binarizate( imgSrc , imgBin );
-
-	showImage( imgBin , 1  , "imgbin" , 0 );
-
-	cvCvtColor( imgSrc , imgGra , CV_BGR2GRAY );
-
-	cvSetZero( imgRed );
-	cvSetZero( imgBla );
-	cvSetZero( imgBla4Dilate );
-
-
-	/*
-	 * seperate red points and black pts based on HSV value
-	 * differences, the H value of red is nearly 0 and
-	 * meanwhile the S value shouldn't be too low
-	 */
-	cvCvtColor( imgSrc , imgHSV , CV_BGR2HSV );
-
-	int pts_count = 0;
-	for ( int irow = 0 ; irow < imgBin->height ; ++ irow )
-	for ( int icol = 0 ; icol < imgBin->width  ; ++ icol )
-	{
-		int HSV_H = cvGet2D( imgHSV , irow , icol ).val[0];
-
-		if ( cvGetReal2D( imgBin , irow , icol ) != 255 )
-		{
-			pts_count ++;
-			if ( cvGet2D( imgHSV , irow , icol ).val[1] > 50 && ( HSV_H < 20 || HSV_H > 160 ) )
-				cvSetReal2D( imgRed , irow , icol , 255 );
-			else
-			{
-				cvSetReal2D( imgBla , irow , icol , 255 );
-				cvSetReal2D( imgBla4Dilate , irow , icol , 255 );
-			}
-		}
-	}
-	showImage(imgRed, 1., "red pixels in the image ");
-	showImage(imgBla, 1., "black pixels in the image ");
-#ifdef DEBUG
-	showImage( imgRed , 1. , "red pixels in the image " );
-	showImage( imgBla , 1. , "black pixels in the image " );
-#endif
-	/*
-	 * finding all the lines satisfy the conditons given below
-	 * using cvHoughLine2,
-	 * the line length should be larger than 2/3 of min(height ,width) of the image
-	 * and max_gap = 5;
-	 */
-
-	int THRESHOLD_LINE = 2 * std::min( imgBla->width , imgBla->height )/3;
-	int MIN_LINE = 1;
-	int MAX_GAP  = 5;
-	CvMemStorage *storage = cvCreateMemStorage();  
-	CvSeq *lines = 0;  
-	lines = cvHoughLines2( imgBla , storage , CV_HOUGH_PROBABILISTIC , 1 , CV_PI/180 
-			, THRESHOLD_LINE , MIN_LINE , MAX_GAP );
-
-	cvSetZero( imgBla );
-	for ( int i=0 ; i<lines->total ; i++ )  
-	{  
-		CvPoint *line = (CvPoint *)cvGetSeqElem(lines,i);  
-		cvLine( imgBla , line[0] , line[1] , cvScalar(255) , 1, CV_AA );  
-	}
-	IplConvKernel * dilate_kernel = cvCreateStructuringElementEx( 5 , 5 , 2 , 2 , CV_SHAPE_RECT );
-	cvDilate( imgBla , imgBla , dilate_kernel );
-	cvDilate( imgBla4Dilate , imgBla4Dilate , dilate_kernel );
-
-	for ( int irow = 0 ; irow < imgBla->height ; ++ irow )
-	for ( int icol = 0 ; icol < imgBla->width  ; ++ icol )
-		if ( cvGetReal2D( imgBla , irow , icol ) !=0 || cvGetReal2D( imgBla4Dilate , irow , icol ) !=0 )
-			cvSetReal2D( imgRed , irow , icol , 0 );
-
-	showImage(imgBla, 1, "the dilated boundary lines");
-	showImage(imgRed, 1, "the residual red points after filtered out the dilated boundary lines");
-#ifdef DEBUG
-	showImage( imgBla , 1 , "the dilated boundary lines" );
-	showImage( imgRed , 1 , "the residual red points after filtered out the dilated boundary lines" );
-#endif
-	int red_pts_count = 0;
-	for ( int irow = 0 ; irow < imgRed->height ; ++ irow )
-	for ( int icol = 0 ; icol < imgRed->width  ; ++ icol )
-	{
-		if ( cvGetReal2D( imgRed , irow , icol ) != 0 )
-			red_pts_count ++;
-	}
-
-	cvReleaseImage( &imgBin );
-	cvReleaseImage( &imgBla );
-	cvReleaseImage( &imgBla4Dilate );
-	cvReleaseImage( &imgHSV );
-	cvReleaseStructuringElement( & dilate_kernel );
-
-	if ( 1. * red_pts_count / pts_count < red_pts_prec )
-	{
-		cvReleaseImage( &imgGra );
-		cvReleaseImage( &imgRed );
-		return false;
-	}
-	// filter imgGra using imgRed mask
-	for ( int irow = 0 ; irow < imgRed->height ; ++ irow )
-	for ( int icol = 0 ; icol < imgRed->width  ; ++ icol )
-		if ( cvGetReal2D( imgRed , irow , icol ) == 0 )
-			cvSetReal2D( imgGra , irow , icol , 0 );
-
-	/*
-	 * eleminate all the small noises based on the contour area
-	 * first we extract all the contours in the imgRed
-	 * then we sort the area from high to low
-	 * then we add then one by one until we get at least 95% area of the whole area
-	 * that means we get rid of small ones;
-	 */
-	CvSeq * contours;
-	cvFindContours( imgRed , storage , &contours , sizeof(CvContour) , CV_RETR_EXTERNAL , CV_CHAIN_APPROX_SIMPLE );
-	cvReleaseImage( &imgBla );
-
-	CvContour * contourGetter = (CvContour *)contours;
-	vector< pair<CvRect , double> > contour_rect_area_pair;
-
-	do
-	{                                                                                                             
-		pair<CvRect , double> tmp = make_pair( contourGetter->rect , fabs(cvContourArea( contourGetter )) );
-		contour_rect_area_pair.push_back( tmp );
-
-		contourGetter = ( CvContour * ) contourGetter->h_next;
-	}
-	while ( contourGetter != 0 );
-	cvReleaseMemStorage( &storage );
-
-	// do the box merging and adding area
-	sort( contour_rect_area_pair.begin() , contour_rect_area_pair.end() , sort_area );
-	double whole_area = 0.;
-	for ( int i = 0 ; i < contour_rect_area_pair.size() ; ++ i )
-		whole_area += contour_rect_area_pair[i].second;
-
-	CvRect BBOX = contour_rect_area_pair[0].first;
-	double adding_area = contour_rect_area_pair[0].second;
-	int index = 1;
-
-	while( adding_area < 0.92 * whole_area )
-	{
-		merging_box( BBOX , contour_rect_area_pair[index].first );
-		adding_area += contour_rect_area_pair[index].second;
-		index++;
-	}
-
-	// ready to rsize the gray image in BBOX range
-	cvSetImageROI( imgGra , BBOX );
-
-	int box_width = BBOX.width;
-	int box_heigh = BBOX.height;
-
-	// MNIST data is 20 * 20 size but in a box of 28 *28 
-	float scale = 20 / float(box_width>box_heigh?box_width:box_heigh);
-
-	int tmp_width = int(28 / scale);
-	int tmp_heigh = int(28 / scale);
-
-	IplImage * imgTMP = cvCreateImage( cvSize( tmp_width , tmp_heigh ) , 8 , 1 );
-	cvSetZero( imgTMP );
-
-	int xGap = ( tmp_width - box_width ) / 2;
-	int yGap = ( tmp_heigh - box_heigh ) / 2;
-
-	for ( int ir = 0 ; ir < box_heigh ; ++ ir )
-		for ( int ic = 0 ; ic < box_width ; ++ ic )
-			cvSetReal2D( imgTMP , ir + yGap , ic + xGap , cvGetReal2D( imgGra , ir , ic ) );
-
-	IplImage * imgTMP2 = cvCreateImage( cvSize( 28 , 28 ) , 8 , 1 );
-	cvSetZero( imgTMP2 );
-
-	cvResize( imgTMP , imgTMP2 , CV_INTER_AREA );
-
-	// MNIST data 's heart in the heart of the image
-	int xHeart_resize = 0;
-	int yHeart_resize = 0;
-	int count_resize = 0;
-
-	for ( int ir = 0 ; ir < 28 ; ++ ir )
-		for ( int ic = 0 ; ic < 28 ; ++ ic )
-		{
-			if ( cvGetReal2D( imgTMP2 , ir , ic ) != 0 )
-			{
-				xHeart_resize += ic;
-				yHeart_resize += ir;
-				count_resize ++;
-			}
-		}
-	xHeart_resize /= count_resize;
-	yHeart_resize /= count_resize;
-
-	cvSetZero( imgRst );
-
-	for ( int ir = 0 ; ir < 28 ; ++ ir )
-		for ( int ic = 0 ; ic < 28 ; ++ ic )
-		{
-			int xcor = ic - 14 + xHeart_resize;
-			int ycor = ir - 14 + yHeart_resize;
-			if ( xcor >= 0 && xcor < 28 && ycor >= 0 && ycor < 28 )
-				cvSetReal2D( imgRst , ir , ic , cvGetReal2D( imgTMP2 , ycor , xcor ) );
-		}
-
-	// ususally after resizing ,the gray scale is usually low , so we rescale it to 0-255
-	int ave_gray = 0;
-	int gray_count = 0;
-	for ( int ir = 0 ; ir < 28 ; ++ ir )
-		for ( int ic = 0 ; ic < 28 ; ++ ic )
-		{
-			if ( cvGetReal2D( imgRst , ir , ic ) != 0 )
-			{
-				gray_count ++;
-				ave_gray += cvGetReal2D( imgRst , ir , ic );
-			}
-		}
-	ave_gray /= gray_count;
-
-	float scale_factor = 255./ave_gray;
-
-	for ( int ir = 0 ; ir < 28 ; ++ ir )
-		for ( int ic = 0 ; ic < 28 ; ++ ic )
-		{
-			if ( int(cvGetReal2D( imgRst , ir , ic ) *scale_factor * 0.7) > 255 )
-				cvSetReal2D( imgRst , ir , ic , 255 );
-			else
-				cvSetReal2D( imgRst , ir , ic , int(cvGetReal2D( imgRst , ir , ic ) *scale_factor * 0.8) );
-		}
-	//showImage( imgRst , 10 , "dd" );
-	cvReleaseImage( & imgTMP );
-	cvReleaseImage( & imgTMP2 );
-	cvReleaseImage( & imgGra );
-
-	return true;
 }
+
 
 bool hasPixelsInBox( IplImage * imgSrc , Binarizator & BINTOR , int range , float perc )
 {

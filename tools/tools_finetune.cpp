@@ -11,21 +11,19 @@
 using namespace std;
 int main( int argc , char ** argv )
 {
-	string jpg_path("F:/merge_data");
-	string db_path("F:/merge_data/db");
-	string db_train_path("F:/merge_data/training_set");
-	string db_test_path("F:/merge_data/testing_set");
+	string jpg_path("F:/Lenet_training_set/filtered_with_gaussian_kernel");
+	string db_path("F:/Lenet_training_set/filtered_with_gaussian_kernel/db");
+	string db_train_path("F:/Lenet_training_set/filtered_with_gaussian_kernel/training_set");
+	string db_test_path("F:/Lenet_training_set/filtered_with_gaussian_kernel/testing_set");
 
 	vector<string> db_path_string(1);
 	db_path_string[0] = db_path;
 
-	vector< pair<string, int> > imgName;
-//	int count = getAllImages(imgName, jpg_path);
 	read_Windows_Data2_LevelDB(jpg_path, db_path);
 	merge_data_and_split(db_path_string , db_train_path , db_test_path );
 
 	finetune_with_Existing_LevelDB("lenet_FINETUNE.caffemodel", "lenet_train_leveldb.prototxt", db_train_path,
-		db_test_path, 10000);
+		db_test_path, 15000);
 
 	char s;
 	cin >> s;

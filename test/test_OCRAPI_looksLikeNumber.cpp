@@ -10,7 +10,7 @@ int main( int argc , char * argv[] )
 {
 	initPredictor();
 
-	IplImage * imgSrc = cvLoadImage( "C:/Users/JohnHush/Desktop/wrong_data/6__0.70__19776636.jpg" , CV_LOAD_IMAGE_COLOR );
+	IplImage * imgSrc = cvLoadImage( "C:/handwriting/20170421/before/0__0.87__1934880.jpg" , CV_LOAD_IMAGE_COLOR );
 	float confidence;
 	
 	IplImage * imgOut = cvCreateImage( cvSize(280 , 280) , 8 , 1 );
