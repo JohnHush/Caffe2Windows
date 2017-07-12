@@ -4,18 +4,36 @@ layer {
   type: "Data"
   top: "data"
   top: "label"
-  include {
-    phase: TRAIN
+  include{
+  	phase: TRAIN
   }
   transform_param {
     scale: 0.00390625
   }
   data_param {
-    source: "examples/mnist/mnist_train_lmdb"
-    batch_size: 64
-    backend: LMDB
+source: ""
+    batch_size: 128
+    backend: LEVELDB
   }
 }
+layer {
+  name: "mnist"
+  type: "Data"
+  top: "data"
+  top: "label"
+  include {
+    phase: TEST
+  }
+  transform_param {
+    scale: 0.00390625
+  }
+  data_param {
+    source: ""
+    batch_size: 100
+    backend: LEVELDB
+  }
+}
+
 layer {
   name: "conv1"
   type: "Convolution"
@@ -130,6 +148,16 @@ layer {
     bias_filler {
       type: "constant"
     }
+  }
+}
+layer {
+  name: "accuracy"
+  type: "Accuracy"
+  bottom: "ip2"
+  bottom: "label"
+  top: "accuracy"
+  include {
+    phase: TEST
   }
 }
 layer {
