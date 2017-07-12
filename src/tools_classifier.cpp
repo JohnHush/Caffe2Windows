@@ -40,7 +40,7 @@ bool getRedPixelsInHSVRange2(IplImage * imgSrc, Binarizator & BINTOR, float red_
 		*/
 		cvCvtColor(imgSrc, imgHSV, CV_BGR2HSV);
 
-		int pts_count = 0;
+		int pts_count = 1;
 		for (int irow = 0; irow < imgBin->height; ++irow)
 			for (int icol = 0; icol < imgBin->width; ++icol)
 			{
@@ -160,7 +160,6 @@ bool getRedPixelsInHSVRange2(IplImage * imgSrc, Binarizator & BINTOR, float red_
 		}
 
 		cvReleaseImage(&imgBin);
-//		cvReleaseImage(&imgBla);
 		cvReleaseImage(&imgBla4Dilate);
 		cvReleaseImage(&imgHSV);
 		cvReleaseStructuringElement(&dilate_kernel1);
@@ -171,6 +170,7 @@ bool getRedPixelsInHSVRange2(IplImage * imgSrc, Binarizator & BINTOR, float red_
 			cvReleaseImage(&imgGra);
 			cvReleaseImage(&imgRed);
 			cvReleaseImage(&imgBla);
+			cvReleaseMemStorage(&storage);
 			return false;
 		}
 		// filter imgGra using imgRed mask
@@ -200,8 +200,10 @@ bool getRedPixelsInHSVRange2(IplImage * imgSrc, Binarizator & BINTOR, float red_
 			CvRect & rect = contourGetter->rect;
 			CvPoint pt1 = cvPoint( rect.x , rect.y );
 			CvPoint pt2 = cvPoint( rect.x + rect.width , rect.y + rect.height );
+			CvPoint center = cvPoint( ( pt1.x + pt2.x )/2 , ( pt1.y + pt2.y )/2);
 
-			if (cvGetReal2D(imgBla, pt1.y, pt1.x) != 0 && cvGetReal2D(imgBla, pt2.y, pt2.x) != 0)
+			if (cvGetReal2D(imgBla, pt1.y, pt1.x) != 0 && cvGetReal2D(imgBla, pt2.y, pt2.x) != 0
+				&& cvGetReal2D(imgBla, center.y, center.x) != 0)
 			{
 				contourGetter = (CvContour *)contourGetter->h_next;
 				continue;
@@ -212,6 +214,16 @@ bool getRedPixelsInHSVRange2(IplImage * imgSrc, Binarizator & BINTOR, float red_
 
 			contourGetter = (CvContour *)contourGetter->h_next;
 		} while (contourGetter != 0);
+
+		if (contour_rect_area_pair.size() == 0 )
+		{
+			cvReleaseImage(&imgGra);
+			cvReleaseImage(&imgRed);
+			cvReleaseImage(&imgBla);
+			cvReleaseImage(&imgRedClone);
+			cvReleaseMemStorage(&storage);
+			return false;
+		}
 		
 		cvReleaseMemStorage(&storage);
 		
@@ -290,7 +302,7 @@ bool getRedPixelsInHSVRange2(IplImage * imgSrc, Binarizator & BINTOR, float red_
 			}
 
 		// ususally after resizing ,the gray scale is usually low , so we rescale it to 0-255
-		int ave_gray = 0;
+		long ave_gray = 0;
 		int gray_count = 0;
 		for (int ir = 0; ir < 280; ++ir)
 			for (int ic = 0; ic < 280; ++ic)
